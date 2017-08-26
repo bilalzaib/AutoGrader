@@ -1,15 +1,49 @@
 {% extends 'base.html' %}
+{% load bootstrap3 %} 
 
 {% block content %}
-	<h2>Welcome, {{ user.get_full_name }} <small>{{ user.username }}</small>!</h2>
-	
-	<h2>Sections</h2>
-	{% if sections %}
-		<ul>
-		{% for section in sections %}
-		<li><a href="{% url 'section' section.id %}">{{ section.sec_name }}</a></li>    {% endfor %}
-		</ul>
-	{% else %}
-		<p>No Section is available.</p>
-	{% endif %}
+	<div class="row">
+		<div class="col col-sm-9">
+			<h2>Hi, {{ user.get_full_name }} </h2>
+		</div>
+		<div class="col col-sm-3" style="border-left: 1px solid black;">
+			<b><p>API LOGIN</p></b>
+			<b><i>Email:</i></b> {{ user.email }}<br />
+			<b><i>Submission Password:</i></b> {{ student.submission_pass }}
+
+		</div>
+		<hr />
+
+	</div>
+	<div class="row">
+		<div class="col col-sm-6">
+			<h3>Your Courses</h3>
+	 		{% if courses %}
+	 			<div class="list-group">
+	 			{% for course in courses %}
+	 				<a class="list-group-item" href="course/{{ course.id }}">{{ course.name }}</a>
+	 			{% endfor %}
+	 			</div>
+	 		{% else %}
+				<p>No registered course available.</p>
+			{% endif %}
+		</div>
+		<div class="col col-sm-6">
+			<h3>Enroll to a course</h3>
+	 		{% if form.errors %}
+		    	{% bootstrap_messages %}
+		  	{% endif %}
+		 	<form method="post">
+			    {% csrf_token %}
+
+			    {% bootstrap_form form %}
+			    {% buttons %}
+			      <button type="submit" class="btn btn-primary">
+			        Enroll
+			      </button>
+			    {% endbuttons %}
+			</form>
+		</div>
+	</div>
+
 {% endblock %}

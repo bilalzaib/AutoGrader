@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load bootstrap3 %} 
+
+{% block content %}
+	<div class="row">
+		<h2>Welcome, {{ course.name }} </h2>
+		<hr />
+	</div>
+	<div class="row">
+		<div class="col col-sm-3">
+			<h3>Assignments</h3>
+	 		{% if assignments %}
+	 			<div class="list-group">
+	 			{% for assignment in assignments %}
+		 			<a class="list-group-item {% if assignment_id == assignment.id %} active {% endif %}" href="{{ course.id }}/{{ assignment.id }}">{{ assignment.title }}</a></li>
+	 			{% endfor %}
+	 			</div>
+	 		{% else %}
+				<p>No registered course available.</p>
+			{% endif %}
+		</div>
+		<div class="col col-sm-9">
+			<h3>Assignment Information</h3>
+			<hr />
+	 		{% if selected_assignment %}
+	 			<h4>TITLE: {{ selected_assignment.title }}</h4>
+	 			<p>{{ selected_assignment.description }}</p>
+	 			<hr />
+	 			<h4>Assignment Files</h4>
+	 			<div class="row">
+	 				<div class="col-sm-6">
+	 					<table class="table">
+	 						<tr>
+	 							<td>Assignment File</td>
+	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 						</tr>
+	 						<tr>
+	 							<td>Student Test Set</td>
+	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 						</tr>
+	 						<tr>
+	 							<td>Config File</td>
+	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 						</tr>
+	 					</table>
+	 				</div>
+	 				<div class="col-sm-6" style="text-align: right;">
+	 					<a href="{{ selected_assignment.student_test }}" class="btn btn-success">Download as ZIP</a>
+	 				</div>
+	 			</div>
+	 			<hr />
+	 			<h4>Submission History</h4>
+	 			{% if submission_history %}
+	 			
+	 			{% else %}
+	 				No submission available for this assignment.
+ 				{% endif %}
+	 		{% else %}
+				<p>No selected assignment.</p>
+			{% endif %}
+		</div>
+	</div>
+
+{% endblock %}
