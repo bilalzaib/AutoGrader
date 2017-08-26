@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	<h2>Section : <small>{{ section.sec_name }}<small></h2>
+	
+	<h2>Assignments</h2>
+	{% if assignments %}
+		<ul>
+		{% for assignment in assignments %}
+		<li><a href="{% url 'assignment' assignment.id %}">{{ assignment.as_code }}</a></li>    {% endfor %}
+		</ul>
+	{% else %}
+		<p>No Assignment is available.</p>
+	{% endif %}
+{% endblock %}

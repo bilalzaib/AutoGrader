@@ -1,5 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Welcome, {{ user.get_full_name }} <small>{{ user.username }}</small>!</h2>
+	<h2>Welcome, {{ user.get_full_name }} <small>{{ user.username }}</small>!</h2>
+	
+	<h2>Sections</h2>
+	{% if sections %}
+		<ul>
+		{% for section in sections %}
+		<li><a href="{% url 'section' section.id %}">{{ section.sec_name }}</a></li>    {% endfor %}
+		</ul>
+	{% else %}
+		<p>No Section is available.</p>
+	{% endif %}
 {% endblock %}

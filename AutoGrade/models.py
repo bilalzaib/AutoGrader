@@ -6,10 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Create your models here.
 
-class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
 class Section(models.Model):
+    DEFAULT_PK = 1
     sec_name = models.CharField(max_length=10)
     rand_key = models.IntegerField()
 
@@ -18,8 +16,19 @@ class Section(models.Model):
 
 class Assignment(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-    assignment_text = models.CharField(max_length=1000)
+    as_code = models.CharField(max_length = 5)
+    as_text = models.CharField(max_length=1000)
     pub_date = models.DateTimeField('date published')
 
     def __str__(self):
-        return self.assignment_text
+        return self.as_code
+
+class Student(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, default = Section.DEFAULT_PK)
+
+@receiver(post_save, sender=User)
+def update_student(sender, instance, created, **kwargs):
+    if created:
+        Student.objects.create(user=instance)
+    instance.student.save()
