@@ -23,7 +23,14 @@
 			<h3>Assignment Information</h3>
 			<hr />
 	 		{% if selected_assignment %}
-	 			<h4>TITLE: {{ selected_assignment.title }}</h4>
+	 			<div class="row">
+	 				<div class="col col-sm-6">
+		 				<h4>TITLE: {{ selected_assignment.title }}</h4>
+					</div>
+	 				<div class="col col-sm-6" style="text-align: right; padding-top: 5px;">
+	 					<p><i><small><b>Due Date: </b>{{ selected_assignment.due_date }}</small></i></p>
+	 				</div>
+	 			</div>
 	 			<p>{{ selected_assignment.description }}</p>
 	 			<hr />
 	 			<h4>Assignment Files</h4>
@@ -32,26 +39,44 @@
 	 					<table class="table">
 	 						<tr>
 	 							<td>Assignment File</td>
-	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.assignment_file }}">DOWNLOAD</a></td>
 	 						</tr>
 	 						<tr>
 	 							<td>Student Test Set</td>
-	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.student_test }}">DOWNLOAD</a></td>
 	 						</tr>
 	 						<tr>
 	 							<td>Config File</td>
-	 							<td><a href="{{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.config_file }}">DOWNLOAD</a></td>
 	 						</tr>
 	 					</table>
 	 				</div>
 	 				<div class="col-sm-6" style="text-align: right;">
-	 					<a href="{{ selected_assignment.student_test }}" class="btn btn-success">Download as ZIP</a>
+	 					<a href="{% url 'home' %}download/?path={{ assignment_zip_file }}" class="btn btn-success">Download as ZIP</a>
 	 				</div>
 	 			</div>
 	 			<hr />
 	 			<h4>Submission History</h4>
 	 			{% if submission_history %}
-	 			
+	 				<p>Here</p>
+	 				<table class="table">
+	 					<tr>
+	 						<th>Sr.</t>
+	 						<th>Submission Date</th>
+	 						<th>Passed</th>
+	 						<th>Failed</th>
+	 						<th>Percent</th>
+	 					</tr>
+	 					{% for submission in submission_history %}
+	 					<tr>
+	 						<td>{{ forloop.counter }}</td>
+	 						<td>{{ submission.publish_date }}</td>
+	 						<td>{{ submission.passed }}</td>
+	 						<td>{{ submission.failed }}</td>
+	 						<td>{{ submission.percent }}</td>
+	 					</tr>
+	 					{% endfor %}
+	 				</table>
 	 			{% else %}
 	 				No submission available for this assignment.
  				{% endif %}

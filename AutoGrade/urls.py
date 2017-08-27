@@ -11,4 +11,5 @@ urlpatterns = [
     #url(r'^enroll$', views.enroll, name='enroll'),
     url(r'^course/(?P<course_id>[0-9]+)$', views.course, name='course'),
     url(r'^course/(?P<course_id>[0-9]+)/(?P<assignment_id>[0-9]+)$', views.course, name='course'),
+    url(r'^download/$', views.download),
 ]

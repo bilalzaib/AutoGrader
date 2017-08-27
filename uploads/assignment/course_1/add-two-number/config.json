@@ -1,0 +1,8 @@
+{
+   "total_points" : 25,
+   "modifiable_files" : ["a01.py"],
+   "student_tests": ["test_student.py"],
+   "instructor_tests" : ["test_instructor.py"],
+   "other_files": [],
+   "timeout" : 2
+}
