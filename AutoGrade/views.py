@@ -3,15 +3,21 @@ from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
 
 from .models import Student, Course, Assignment, Submission
 from .forms import SignUpForm, EnrollForm
+
+from django.http import JsonResponse
+
+import json
 
 @login_required(login_url = 'login')
 def home(request):
     user = User.objects.get(pk=request.user.id)
     student = Student.objects.filter(user=user)[0]
-    print (student)
+
     form = EnrollForm()
     if request.method == "POST":
       form = EnrollForm(request.POST)
@@ -56,14 +62,7 @@ def signup(request):
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
-def section(request,section_id):
-    sec = Section.objects.get(id = section_id)
-    return render(request, 'section.html', {'assignments' : Assignment.objects.filter(section = sec), 'section' : sec})
-
-def assignment(request,assignment_id):
-    assignment = Assignment.objects.get(id = assignment_id)
-    return render(request, 'assignment.html', {'assignment' : assignment})
-
+@login_required(login_url = 'login')
 def course(request, course_id, assignment_id = 0):
     user = User.objects.get(pk=request.user.id)
     student = Student.objects.filter(user=user)[0]
@@ -84,3 +83,37 @@ def course(request, course_id, assignment_id = 0):
         'submission_history'  : submission_history
       }
     )
+
+@csrf_exempt
+def api(request, action):
+  email = request.POST.get('email')
+  submission_pass = request.POST.get('submission_pass')
+
+  user = User.objects.filter(email=email)
+  if (user):
+    student = Student.objects.filter(user=user[0], submission_pass=submission_pass)[0]
+    
+    if (student):
+      if (action == "get_course"):
+        courses = []
+        for course in student.courses.all():
+          courses.append(course.name)
+        response_data = {"status": 200, "type": "SUCCESS", "data": courses}
+      elif (action == "get_assignment"):
+        course_id = request.POST.get('course_id')
+        courses = Course.objects.filter(course_id=course_id)
+
+        assignments = []
+        for assignment in Assignment.objects.filter(course=course):
+          assignments.append(assignment.title)
+
+        response_data = {"status": 200, "type": "SUCCESS", "data": assignments}
+      elif (action == "submit_assignment"):
+        pass
+    else:
+      response_data = {"status": 400, "type": "ERROR", "message": "Invalid Student"}
+  else :
+    response_data = {"status": 400, "type": "ERROR", "message": "Invalid User"}
+
+
+  return JsonResponse(response_data)
