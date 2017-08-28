@@ -13,10 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
+from django.views.generic.base import RedirectView
 from django.conf.urls import url,include
 from django.contrib import admin
 
 urlpatterns = [
+    url(r'^$', RedirectView.as_view(url='autograde/', permanent=False), name='index'),
     url(r'^autograde/', include('AutoGrade.urls')),
     url(r'^admin/', admin.site.urls),
 ]

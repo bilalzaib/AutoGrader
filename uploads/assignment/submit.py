@@ -1,0 +1,199 @@
+import requests
+import json
+import sys
+import requests
+import zipfile
+import os
+import logging
+import json
+import zipfile
+import shutil
+import logging
+import os
+import sys
+import re
+import time
+from datetime import datetime
+
+logging.basicConfig(filename='submission.log')
+
+url = "http://127.0.0.1:8000/autograde/api/"
+
+def touch(fname, times=None):
+    with open(fname, 'a'):
+        os.utime(fname, times)
+
+def get_score_from_result_line(res_line, total_points):
+    # case where we have failures and passes
+    match = re.match(r"=*\s(\d*)\sfailed,\s(\d*)\spassed,\s.*", res_line)
+    passed = 0
+    failed = 0
+    if match:
+        failed = int(match.group(1))
+        passed = int(match.group(2))
+    else:
+        match = re.match(r"=*\s(\d*)\spassed.*", res_line)
+        if match:
+            passed = int(match.group(1))
+            failed = 0
+        else:
+            match = re.match(r"=*\s(\d*)\sfailed.*", res_line)
+            if match:
+                passed = 0
+                failed = int(match.group(1))
+            else:
+                logging.error("Failed to parse score line: " + res_line)
+                # TODO: throw exception
+                return (0,0,0)
+
+    percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
+    return (passed, failed, percent)
+
+def run_student_tests(target_folder, total_points, timeout):
+    logging.debug("Running student tests in: " + target_folder)
+    cur_directory = os.getcwd()
+
+    init_file = os.path.join(target_folder, "__init__.py")  
+    touch(init_file)
+
+    logging.debug("Changing directory ... ")
+    os.chdir(target_folder)
+    score = (0, 0, 0) # passed, failed, percent
+
+    logging.debug("Capturing stdout")
+    from io import StringIO
+    old_stdout = sys.stdout
+    sys.stdout = mystdout = StringIO()
+
+    import pytest
+    pytest.main(['--timeout=' + str(timeout)])
+    logging.debug("Restoring stdout")
+
+    sys.stdout = old_stdout
+    out = mystdout.getvalue()
+
+    # print out
+    res_line = out.splitlines()[-1]
+    score = get_score_from_result_line(res_line, total_points)
+
+    logging.debug("Restoring working directory ...")
+
+    logging.debug("Read test line [" + res_line.strip("=") + "]")
+    logging.debug("Calculated score: " + str(score))
+    os.chdir(cur_directory)
+
+    return (score, out)
+
+def write_student_log(student_assignment_folder, outlog):
+    out_file = os.path.join(student_assignment_folder, "test-results" + ".log")
+    logging.debug("Writing log to: " + out_file)
+    with open(out_file, "a") as text_file:
+        text_file.write(outlog)
+
+class Submission():
+	config = {}
+	config_file_name = "config.json"
+
+	def __init__(self):
+		logging.info('Initiated')
+		try:
+			logging.info('Reading config file')
+			with open(self.config_file_name) as file:
+				self.config = json.load(file)
+		except Exception:
+			logging.error("No config file found")
+			sys.exit()
+
+	def get_cred(self):
+		if 'email' in self.config and 'submission_pass' in self.config :
+			logging.info('Using credentials of config file')
+			cred = {
+				"email": self.config['email'],
+				"submission_pass": self.config['submission_pass'],
+			}
+		else:
+			logging.info('Asking for API login details')
+			cred = {
+				"email": input("Enter Email: "),
+				"submission_pass": input('Submission Password: '),
+			}
+
+		return cred
+
+	def submit_assignment(self):
+		submission_file = "_submission.zip"
+
+		try:
+			logging.info('Deleting old submission file')
+			os.remove(submission_file)
+		except Exception:
+			logging.info('No submission file found')	
+			pass
+
+		modifiable_files 	= self.config['modifiable_files']
+
+		zip_file = zipfile.ZipFile(submission_file, 'w', zipfile.ZIP_DEFLATED)
+		files = modifiable_files
+
+		logging.info('Creating compressed submission file')	
+		for file in files:
+			if file != []:
+				zip_file.write(file)
+		zip_file.close()
+		logging.info('Closing zipped submission file')	
+
+		cred = data = self.get_cred()
+		data['assignment'] = self.config['assignment']
+
+		logging.info('Sending submission file to server')	
+		r = requests.post(url + 'submit_assignment', 
+			files = {'submission_file': open(submission_file, 'rb')}, 
+			data = data)
+
+		try:
+			logging.info('Deleting submission file')
+			os.remove(submission_file)
+		except Exception:
+			logging.info('No submission file found')	
+			pass
+
+
+		if r.status_code == 200:
+			result_json = r.json()
+			if result_json['status'] == 200:
+				logging.error('Saving credentials to config file')		
+				self.config['email'] = cred['email']
+				self.config['submission_pass'] = cred['submission_pass']
+			else:
+				logging.error('Removing credentials from config file')		
+				del self.config['email'];
+				del self.config['submission_pass'];
+
+			# Save File
+			with open(self.config_file_name, 'w') as file:
+				json.dump(self.config, file)
+		
+			return r
+		else:
+			logging.error('Error code in response: ' + r.status_code)	
+			sys.exit("ERR: Invalid request")
+
+	def run(self):
+		if len(sys.argv) == 1:
+			sys.exit("ERR: No argument supplied")
+		elif sys.argv['1'] == "remote"
+			r = self.submit_assignment()
+			result = r.json()
+			print ("RESPONSE: " + " passed: " + str(result['passed']) + " failed: " + str(result['failed']) + " percent: " + str(result['percent']))
+			print ("\nNOTE: You can see your submission on web interface also.")
+		elif sys.argv['1'] == "local"
+			(score, out) = run_student_tests("", self.config['total_points'], self.config['timeout'])
+			print ("\n\nRESULT: " + " passed: " + str(result['passed']) + " failed: " + str(result['failed']) + " percent: " + str(result['percent']))
+			write_student_log("", out)
+		else:
+			sys.exit("ERR: Invalid argument supplied")
+
+
+
+s = Submission()
+s.run()

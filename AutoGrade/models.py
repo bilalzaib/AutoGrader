@@ -5,6 +5,10 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
+from .storage import OverwriteStorage
+
+from os.path import basename
+
 from datetime import datetime    
 import string
 import random
@@ -65,11 +69,17 @@ class Assignment(models.Model):
     description     = models.TextField(max_length=512, null=True, default=None)
     
     # Files
-    instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None)
-    student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None)
-    config_file     = models.FileField(upload_to=assignment_directory_path, null=False, default=None)
-    assignment_file = models.FileField(upload_to=assignment_directory_path, null=False, default=None)
+    instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
+    student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
+    #config_file     = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
+    assignment_file = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
 
+    #assignment_files = FilerFileField(related_name="filer_assignment_files", null=True)
+
+    total_points    = models.IntegerField(default=25)
+    timeout         = models.IntegerField(default=3)
+
+    open_date = models.DateTimeField('open date', default=datetime.now)
     due_date = models.DateTimeField('due date', default=datetime.now)
     publish_date = models.DateTimeField('date published', default=datetime.now)
 
@@ -85,37 +95,8 @@ class Submission(models.Model):
     percent         = models.FloatField(default=0)
     publish_date    = models.DateTimeField('date published', default=datetime.now)
 
-
-
-# Create zip file of Assignment
-@receiver(pre_save, sender=Assignment)
-def delete_old_files(sender, instance, **kwargs):
-
-    # TODO: find proper solution
-    # Problem when only one file is uploaded
-    """
-    try:
-        os.remove(instance.instructor_test.url)
-    except Exception:
-        pass
-    
-    try:
-        os.remove(instance.student_test.url)
-    except Exception:
-        pass
-    
-    try:
-        os.remove(instance.config_file.url)
-    except Exception:
-        pass
-    
-    try:
-        os.remove(instance.assignment_file.url)
-    except Exception:
-        pass
-    """
-    return
-
+    def get_log_file(self):
+        return self.submission_file.url.replace(".zip","")  + "/test-results.log"
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
@@ -125,36 +106,29 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
     zip_full_path = assignment_directory + "assignment" + str(instance.id) + ".zip"
 
+    # Creating student zip file
     zip_file = zipfile.ZipFile(zip_full_path, 'w', zipfile.ZIP_DEFLATED)
     
-    # Creating student zip file
-    config_data = None
-    with open(instance.config_file.url) as file:
-        config_data = json.load(file)
+    assignment_id = int(instance.id);
 
-    student_config = {}
-    student_config["assignment"]        = instance.id,
-    student_config["modifiable_files"]  = config_data['modifiable_files'],
-    student_config["student_tests"]     = config_data['student_tests'],
-    student_config["other_files"]       = config_data['other_files'],
-    student_config["timeout"]           = config_data['timeout']
+    student_config = {
+        "assignment"       : int(assignment_id),
+        "modifiable_files" : [basename(instance.assignment_file.url)],
+        "student_tests"    : [basename(instance.student_test.url)],
+        "timeout"          : int(instance.timeout),
+        "total_points"     : int(instance.total_points)
+    }
 
-    student_config_file = instance.config_file.url.replace("config", "student_config");
+    student_config_file = assignment_directory + "config.json";
     with open(student_config_file, 'w') as file:
-            json.dump(student_config, file)
+            json.dump(student_config, file, indent=4)
 
     files = []
     files.append(instance.student_test.url)
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
+    files.append("uploads/assignment/submit.py")
 
     for file in files:
         zip_file.write(file, os.path.basename(file))
     zip_file.close()
-
-
-@receiver(post_save, sender=User)
-def update_student(sender, instance, created, **kwargs):
-    if created:
-        Student.objects.create(user=instance)
-    instance.student.save()

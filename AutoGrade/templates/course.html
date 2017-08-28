@@ -12,7 +12,7 @@
 	 		{% if assignments %}
 	 			<div class="list-group">
 	 			{% for assignment in assignments %}
-		 			<a class="list-group-item {% if assignment_id == assignment.id %} active {% endif %}" href="{{ course.id }}/{{ assignment.id }}">{{ assignment.title }}</a></li>
+		 			<a class="list-group-item {% if assignment_id == assignment.id %} active {% endif %}" href="{% url 'home' %}course/{{ course.id }}/{{ assignment.id }}">{{ assignment.title }}</a></li>
 	 			{% endfor %}
 	 			</div>
 	 		{% else %}
@@ -28,7 +28,10 @@
 		 				<h4>TITLE: {{ selected_assignment.title }}</h4>
 					</div>
 	 				<div class="col col-sm-6" style="text-align: right; padding-top: 5px;">
-	 					<p><i><small><b>Due Date: </b>{{ selected_assignment.due_date }}</small></i></p>
+	 					<p>
+	 						<i><small><b>Open Date: </b>{{ selected_assignment.open_date }}</small></i><br />
+	 						<i><small><b>Due Date: </b>{{ selected_assignment.due_date }}</small></i>
+	 					</p>
 	 				</div>
 	 			</div>
 	 			<p>{{ selected_assignment.description }}</p>
@@ -39,26 +42,25 @@
 	 					<table class="table">
 	 						<tr>
 	 							<td>Assignment File</td>
-	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.assignment_file }}">DOWNLOAD</a></td>
+	 							<td><a class="btn btn-default btn-sm" target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=assignment_file">DOWNLOAD</a></td>
 	 						</tr>
 	 						<tr>
 	 							<td>Student Test Set</td>
-	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.student_test }}">DOWNLOAD</a></td>
+	 							<td><a class="btn btn-default btn-sm" target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=student_test">DOWNLOAD</a></td>
 	 						</tr>
 	 						<tr>
 	 							<td>Config File</td>
-	 							<td><a target="_blank" href="{% url 'home' %}download/?path={{ selected_assignment.config_file }}">DOWNLOAD</a></td>
+	 							<td><a class="btn btn-default btn-sm"  target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=config_file">DOWNLOAD</a></td>
 	 						</tr>
 	 					</table>
 	 				</div>
 	 				<div class="col-sm-6" style="text-align: right;">
-	 					<a href="{% url 'home' %}download/?path={{ assignment_zip_file }}" class="btn btn-success">Download as ZIP</a>
+	 					<a target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=zip_file" class="btn btn-success btn-lg">Download as ZIP</a>
 	 				</div>
 	 			</div>
 	 			<hr />
 	 			<h4>Submission History</h4>
 	 			{% if submission_history %}
-	 				<p>Here</p>
 	 				<table class="table">
 	 					<tr>
 	 						<th>Sr.</t>
@@ -66,6 +68,7 @@
 	 						<th>Passed</th>
 	 						<th>Failed</th>
 	 						<th>Percent</th>
+	 						<th>Log</th>
 	 					</tr>
 	 					{% for submission in submission_history %}
 	 					<tr>
@@ -74,6 +77,7 @@
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
 	 						<td>{{ submission.percent }}</td>
+	 						<td><a target="_blank" href="{% url 'home' %}download/?sid={{ submission.id }}" class="btn btn-info btn-sm">DOWNLOAD</a></td>
 	 					</tr>
 	 					{% endfor %}
 	 				</table>

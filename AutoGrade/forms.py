@@ -10,11 +10,10 @@ class SignUpForm(UserCreationForm):
         fields = ('username', 'first_name', 'last_name', 'email' , 'password1', 'password2', )
 
 class EnrollForm(forms.Form):
-    course = forms.ModelChoiceField(queryset=Course.objects.all().order_by('name'))
     secret_key = forms.CharField(
     	widget=forms.TextInput(attrs={'placeholder': 'ABCXYZ12'}),
     	label='Secret Key', 
     	required=False)
 
     class Meta:
-        fields = ('course', 'secret_key')
+        fields = ('secret_key')

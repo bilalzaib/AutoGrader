@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.5.2, pytest-2.9.2, py-1.4.33, pluggy-0.3.1
+rootdir: C:\Users\SyedOwais\Desktop\Auto Grader ITC TA\AutoGrader\uploads\submission\student_1\assignment_1\2017-08-29-005709_submission, inifile: 
+plugins: timeout-1.2.0
+timeout: 3.0s method: thread
+collected 0 items / 1 errors
+
+=================================== ERRORS ====================================
+_____________________ ERROR collecting test_instructor.py _____________________
+import file mismatch:
+imported module 'test_instructor' has this __file__ attribute:
+  C:\Users\SyedOwais\Desktop\Auto Grader ITC TA\AutoGrader\uploads\submission\student_1\assignment_1\2017-08-29-005637_submission\test_instructor.py
+which is not the same as the test file we want to collect:
+  C:\Users\SyedOwais\Desktop\Auto Grader ITC TA\AutoGrader\uploads\submission\student_1\assignment_1\2017-08-29-005709_submission\test_instructor.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+=========================== 1 error in 0.03 seconds ===========================

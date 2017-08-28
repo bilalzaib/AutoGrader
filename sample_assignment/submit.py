@@ -10,7 +10,7 @@ url = "http://127.0.0.1:8000/autograde/api/"
 
 class Submission():
 	config = {}
-	config_file_name = "config.json"
+	config_file_name = "student_config.json"
 	credential_success = True;
 
 	def __init__(self):

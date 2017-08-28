@@ -13,7 +13,16 @@
 
 		</div>
 		<hr />
-
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<br />
+			{% if messages %}
+			    {% for message in messages %}
+			    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+			    {% endfor %}
+			{% endif %}
+		</div>
 	</div>
 	<div class="row">
 		<div class="col col-sm-6">
