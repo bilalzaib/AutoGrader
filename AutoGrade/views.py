@@ -45,13 +45,12 @@ def home(request):
         if form.is_valid():
             secret_key = form.cleaned_data['secret_key']
 
-            course = Course.objects.filter(enroll_key=secret_key)
-            if course.exists():
-                course = course[0]
+            course = Course.objects.filter(enroll_key=secret_key).first()
+            if course:
                 already_registered = Student.objects.filter(pk=student.id, courses__id=course.id).exists()
                 print (already_registered)
                 if already_registered: 
-                    messages.warning1(request, 'You have already registered that course')
+                    messages.warning(request, 'You have already registered that course')
                 else:
                     student.courses.add(course)
                     student.save()
@@ -63,14 +62,14 @@ def home(request):
 
     errors = form.errors or None
     return render(request,
-                  'home.html',
-                  {
-                      'courses': student.courses.all(),
-                      'form': form,
-                      'errors': errors,
-                      'student': student
-                  }
-                  )
+        'home.html',
+        {
+            'courses': student.courses.all(),
+            'form': form,
+            'errors': errors,
+            'student': student
+        }
+    )
 
 
 def signup(request):
@@ -122,7 +121,6 @@ def download(request):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-
             #url = urllib.request.pathname2url(file_path)
             #content_type = mimetypes.guess_type(url)[0]
             content_type = 'application/force-download'
@@ -146,19 +144,17 @@ def course(request, course_id, assignment_id=0):
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student).order_by("-publish_date")
-
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
 
     return render(request, 'course.html', {
-        'assignment_zip_file': assignment_zip_file,
-        'assignment_id': int(assignment_id),
-        'course': course,
-        'assignments': assignments,
-        'selected_assignment': selected_assignment,
-        'submission_history': submission_history
-    }
+            'assignment_zip_file': assignment_zip_file,
+            'assignment_id': int(assignment_id),
+            'course': course,
+            'assignments': assignments,
+            'selected_assignment': selected_assignment,
+            'submission_history': submission_history
+        }
     )
-
 
 
 @csrf_exempt
@@ -199,8 +195,8 @@ def api(request, action):
                         # Move Instructor Test File
                         shutil.copy(assignment.instructor_test.url, extract_directory)
                         
-                        # TODO: Move Student Test File
-                        #shutil.copy(assignment.student_test.url, extract_directory)                        
+                        # Move Student Test File
+                        shutil.copy(assignment.student_test.url, extract_directory)                        
 
                         score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
                         write_student_log(extract_directory, outlog)
