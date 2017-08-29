@@ -4,11 +4,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.conf import settings
 
 from .storage import OverwriteStorage
 
 from os.path import basename
-
 from datetime import datetime    
 import string
 import random
@@ -121,7 +121,11 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.student_test.url)
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
-    files.append("uploads/assignment/submit.py")
+    
+    with open("uploads/assignment/run.py","r") as file:
+        content = file.read()
+        content = content.replace("##RUN_API_URL##", settings.RUN_API_URL)
+        zip_file.writestr("run.py", content)      
 
     for file in files:
         zip_file.write(file, os.path.basename(file))
