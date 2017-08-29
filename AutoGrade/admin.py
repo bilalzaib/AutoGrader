@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Max, Count
 from django.contrib.auth.models import User
-
+from django import forms
 from .models import *
 
 class UserInline(admin.StackedInline):
@@ -53,8 +53,20 @@ class SubmissionInline(admin.TabularInline):
             return qs
 
 
+class AssignmentFormAdmin(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AssignmentFormAdmin, self).__init__(*args, **kwargs)
+        instance = kwargs['instance']
+        instructor = instance.course.instructor
+        self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
+
+    class Meta:
+        fields = '__all__'
+        model = Assignment
+
 @admin.register(Assignment) 
-class AssignmentModelAdmin(admin.ModelAdmin):
+class AssignmentModelAdmin(admin.ModelAdmin):    
+    form = AssignmentFormAdmin
     #inlines = [SubmissionInline,]
 
     def get_queryset(self, request):
