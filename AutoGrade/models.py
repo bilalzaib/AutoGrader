@@ -92,6 +92,9 @@ class Submission(models.Model):
     def get_log_file(self):
         return self.submission_file.url.replace(".zip","")  + "/test-results.log"
 
+    def __str__(self):
+        return self.assignment.title + " (submission_id: " + str(self.id) + ")"
+
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
 def create_assignment_zip_file(sender, instance, created, **kwargs):
