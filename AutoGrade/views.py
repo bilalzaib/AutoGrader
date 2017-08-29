@@ -37,7 +37,7 @@ def home(request):
 
     if user.is_staff or user.is_superuser:
         return HttpResponseRedirect(reverse('admin:index'))
-
+    
     form = EnrollForm()
     if request.method == "POST":
         form = EnrollForm(request.POST)
