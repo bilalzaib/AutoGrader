@@ -1,6 +1,6 @@
 ADMIN
 
-owais Pakistan321
+guru Pakistan321
 
 INSTRUCTOR 
 
