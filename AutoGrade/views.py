@@ -10,6 +10,9 @@ from django.utils import timezone
 from django.utils.encoding import smart_str
 from django.http import JsonResponse
 
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+
 from .models import Student, Course, Assignment, Submission
 from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
@@ -29,8 +32,11 @@ from datetime import datetime
 
 @login_required(login_url='login')
 def home(request):
-    user = User.objects.get(pk=request.user.id)
-    student = Student.objects.filter(user=user)[0]
+    user = request.user
+    student = Student.objects.filter(user=user).first()
+
+    if user.is_staff or user.is_superuser:
+        return HttpResponseRedirect(reverse('admin:index'))
 
     form = EnrollForm()
     if request.method == "POST":
@@ -56,7 +62,6 @@ def home(request):
             redirect('home')
 
     errors = form.errors or None
-    print(student.courses.all())
     return render(request,
                   'home.html',
                   {
@@ -111,7 +116,7 @@ def download(request):
                 return Http404
     elif submission_id:
         submission = Submission.objects.get(id=submission_id)
-        if submission.exists():
+        if submission:
             path = submission.get_log_file()
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
