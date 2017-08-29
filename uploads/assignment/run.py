@@ -17,7 +17,7 @@ from datetime import datetime
 
 logging.basicConfig(filename='submission.log')
 
-url = "http://127.0.0.1:8000/autograde/api/"
+url = "##RUN_API_URL##"
 
 def touch(fname, times=None):
     with open(fname, 'a'):
@@ -117,7 +117,7 @@ class Submission():
 				"email": input("Enter Email: "),
 				"submission_pass": input('Submission Password: '),
 			}
-
+			print()
 		return cred
 
 	def submit_assignment(self):
@@ -189,7 +189,7 @@ class Submission():
 			result = r.json()
 			result = result['message']
 			print ("RESPONSE: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
-			print ("\nNOTE: You can see your submission on web interface also.")
+			print ("NOTE: You can see your submission on web interface also.")
 		elif sys.argv[1] == "local":
 			(result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
 			print ("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
