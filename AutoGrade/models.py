@@ -33,12 +33,6 @@ def submission_key():
 def enroll_key():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
-# Create your models here.
-
-class Section(models.Model):
-    pass
-
-
 class Instructor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # name, email, password
 
