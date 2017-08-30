@@ -58,7 +58,7 @@ def home(request):
 
             else:
                 form.add_error('secret_key', "Invalid Secret Key")
-            redirect('home')
+            return redirect('home')
 
     errors = form.errors or None
     return render(request,
@@ -141,8 +141,13 @@ def download(request):
 @login_required(login_url='login')
 def course(request, course_id, assignment_id=0):
     user = User.objects.get(pk=request.user.id)
-    student = Student.objects.filter(user=user)[0]
-    course = Course.objects.get(pk=course_id)
+    student = Student.objects.filter(user=user, courses=course_id).first()
+
+    if not student:
+        return redirect("home");
+        
+    course = Course.objects.get(id=course_id)
+    
     assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
 
     selected_assignment = None
