@@ -40,6 +40,16 @@ def get_score_from_result_line(res_line, total_points):
     return (passed, failed, percent)
 
 def run_student_tests(q, target_folder, total_points, timeout):
+    # Disable networking for submission file
+    # Source: https://gist.github.com/hangtwenty/9200597e3be274c79896
+    # Source: https://github.com/miketheman/pytest-socket
+    #import socket
+    #def guard(*args, **kwargs):
+    #    raise Exception("I told you not to use the Internet!")
+    #socket.socket = guard
+    #os.nice()
+    #os.setuid()
+    
     logging.debug("Running student tests in: " +target_folder)
     cur_directory = os.getcwd()
 
