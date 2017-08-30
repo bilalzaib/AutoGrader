@@ -41,7 +41,7 @@ class Instructor(models.Model):
     
 class Course(models.Model):
     instructor = models.ForeignKey(Instructor, null=False, default=None)
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=64)
     enroll_key = models.CharField(max_length=8, default=enroll_key, unique=True) # Secret key to enroll
     course_id = models.CharField(max_length=6) # CS101
 
@@ -59,7 +59,7 @@ class Student(models.Model):
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
     
-    title           = models.CharField(max_length=32, null=False, default=None)
+    title           = models.CharField(max_length=64, null=False, default=None)
     description     = models.TextField(max_length=512, null=True, default=None)
     
     # Files
