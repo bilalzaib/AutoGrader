@@ -39,7 +39,7 @@ def get_score_from_result_line(res_line, total_points):
     percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
     return (passed, failed, percent)
 
-def run_student_tests(target_folder, total_points, timeout):
+def run_student_tests(q, target_folder, total_points, timeout):
     logging.debug("Running student tests in: " +target_folder)
     cur_directory = os.getcwd()
 
@@ -72,7 +72,7 @@ def run_student_tests(target_folder, total_points, timeout):
     logging.debug("Calculated score: " + str(score))
     os.chdir(cur_directory)
 
-    return (score, out)
+    q.put([score, out])
 
 def write_student_log(student_assignment_folder, outlog):
     out_file = os.path.join(student_assignment_folder, "test-results" + ".log")

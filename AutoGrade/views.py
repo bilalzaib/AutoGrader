@@ -18,6 +18,8 @@ from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
 from .grader import run_student_tests, write_student_log
 
+from multiprocessing import Process, Manager, Queue
+
 import mimetypes
 import json
 import zipfile
@@ -122,9 +124,7 @@ def download(request):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-            print (raw)
             if raw:
-                print ("here")
                 url = urllib.request.pathname2url(file_path)
                 content_type = mimetypes.guess_type(url)[0]
                 if not content_type:
@@ -147,7 +147,7 @@ def course(request, course_id, assignment_id=0):
         return redirect("home");
         
     course = Course.objects.get(id=course_id)
-    
+
     assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
 
     selected_assignment = None
@@ -210,7 +210,22 @@ def api(request, action):
                         # Move Student Test File
                         shutil.copy(assignment.student_test.url, extract_directory)                        
 
-                        score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                        # Running pytest for student submission.
+                        queue = Queue()
+                        p = Process(target=run_student_tests, args=(queue, extract_directory, assignment.total_points, assignment.timeout,))
+                        p.start()
+                        #TODO: pytest stuck on infinite loop
+                        p.join(assignment.timeout)
+
+                        #In case process is stuck in infinite loop or something
+                        if p.is_alive():
+                            p.terminate()
+                            score = (0,0,0)
+                            outlog = "Process terminated."
+                        else:
+                            score, outlog = queue.get()  
+                                        
+                        #score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
                         write_student_log(extract_directory, outlog)
 
                         submission.passed  = score[0]
