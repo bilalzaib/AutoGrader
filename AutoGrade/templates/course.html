@@ -19,13 +19,11 @@
 				<p>No registered course available.</p>
 			{% endif %}
 		</div>
-		<div class="col col-sm-9">
-			<h3>Assignment Information</h3>
-			<hr />
-	 		{% if selected_assignment %}
+		<div class="col col-sm-9 {% if selected_assignment %} well {% endif %}">
+			{% if selected_assignment %}
 	 			<div class="row">
 	 				<div class="col col-sm-6">
-		 				<h4>TITLE: {{ selected_assignment.title }}</h4>
+		 				<h3>{{ selected_assignment.title }}</b></h3>
 					</div>
 	 				<div class="col col-sm-6" style="text-align: right; padding-top: 5px;">
 	 					<p>
@@ -34,6 +32,7 @@
 	 					</p>
 	 				</div>
 	 			</div>
+				<hr />
 	 			<p>{{ selected_assignment.description }}</p>
 	 			<hr />
 	 			<h4>Assignment Files</h4>
@@ -85,7 +84,7 @@
 	 				No submission available for this assignment.
  				{% endif %}
 	 		{% else %}
-				<p>No selected assignment.</p>
+				<div class="alert alert-info">No selected assignment.</div>
 			{% endif %}
 		</div>
 	</div>
