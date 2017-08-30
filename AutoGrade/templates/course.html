@@ -77,7 +77,7 @@
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
 	 						<td>{{ submission.percent }}</td>
-	 						<td><a target="_blank" href="{% url 'home' %}download/?sid={{ submission.id }}" class="btn btn-info btn-sm">DOWNLOAD</a></td>
+	 						<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&raw=1" class="btn btn-info btn-sm">VIEW</a></td>
 	 					</tr>
 	 					{% endfor %}
 	 				</table>
@@ -87,6 +87,35 @@
 	 		{% else %}
 				<p>No selected assignment.</p>
 			{% endif %}
+		</div>
+	</div>
+
+	<script>	
+	$(document).ready(function(){
+		$('#logModal').on('show.bs.modal', function (e) {
+			var loadurl = $(e.relatedTarget).data('load-url');
+			$(this).find('.modal-log-content').html("").load(loadurl);
+		});
+	});
+	</script>
+	<div id="logModal" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-lg">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Submission Log</h4>
+			</div>
+			<div class="modal-body">
+				<pre class="modal-log-content">
+				</pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+			</div>
+
 		</div>
 	</div>
 

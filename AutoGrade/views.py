@@ -96,6 +96,7 @@ def download(request):
     # TODO: break when user try to download Instructor Test file
     submission_id = request.GET.get('sid')
     assignment_id = request.GET.get('aid')
+    raw = request.GET.get('raw')
     action = request.GET.get('action')
 
     # Check 
@@ -121,9 +122,15 @@ def download(request):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-            #url = urllib.request.pathname2url(file_path)
-            #content_type = mimetypes.guess_type(url)[0]
-            content_type = 'application/force-download'
+            print (raw)
+            if raw:
+                print ("here")
+                url = urllib.request.pathname2url(file_path)
+                content_type = mimetypes.guess_type(url)[0]
+                if not content_type:
+                    content_type = "text/plain"
+            else:
+                content_type = 'application/force-download'
             response = HttpResponse(fh.read(), content_type=content_type)
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
