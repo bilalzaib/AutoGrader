@@ -16,9 +16,12 @@ from django.core.urlresolvers import reverse
 from .models import Student, Course, Assignment, Submission
 from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
-from .grader import run_student_tests, write_student_log
+from .grader import run_student_tests
 
-from multiprocessing import Process, Manager, Queue
+try:
+    from urllib.request import pathname2url
+except ImportError:
+    from urllib import pathname2url
 
 import mimetypes
 import json
@@ -125,7 +128,7 @@ def download(request):
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             if raw:
-                url = urllib.request.pathname2url(file_path)
+                url = pathname2url(file_path)
                 content_type = mimetypes.guess_type(url)[0]
                 if not content_type:
                     content_type = "text/plain"
@@ -155,7 +158,7 @@ def course(request, course_id, assignment_id=0):
     assignment_zip_file = None
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
-        submission_history = Submission.objects.filter(student=student).order_by("-publish_date")
+        submission_history = Submission.objects.filter(student=student, assignment_id=assignment_id).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
 
     return render(request, 'course.html', {
@@ -176,6 +179,7 @@ def api(request, action):
 
     user = User.objects.filter(email=email)
     if (user.exists()):
+        status = 200
         student = Student.objects.filter(user=user[0], submission_pass=submission_pass)
         if (student.exists()):
             student = student[0]
@@ -189,7 +193,8 @@ def api(request, action):
                         response_data = {"status": 200, "type": "SUCCESS",
                          "message": "Assignment doesn't exists"}
                     elif timezone.now() > assignment.due_date:
-                        response_data = {"status": 200, "type": "SUCCESS",
+                        status = 400
+                        response_data = {"status": 400, "type": "ERROR",
                          "message": "Assignment submission date expired"}
                     else:
                         submission = Submission(submission_file=request.FILES['submission_file'], 
@@ -198,6 +203,7 @@ def api(request, action):
                         submission.save()
 
                         submission_file_url = submission.submission_file.url
+                        
                         extract_directory = submission_file_url.replace(".zip","/")
 
                         zip_file = zipfile.ZipFile(submission.submission_file.url, 'r')
@@ -209,25 +215,9 @@ def api(request, action):
                         
                         # Move Student Test File
                         shutil.copy(assignment.student_test.url, extract_directory)                        
-
-                        # Running pytest for student submission.
-                        queue = Queue()
-                        p = Process(target=run_student_tests, args=(queue, extract_directory, assignment.total_points, assignment.timeout,))
-                        p.start()
-                        #TODO: pytest stuck on infinite loop
-                        p.join(assignment.timeout)
-
-                        #In case process is stuck in infinite loop or something
-                        if p.is_alive():
-                            p.terminate()
-                            score = (0,0,0)
-                            outlog = "Process terminated."
-                        else:
-                            score, outlog = queue.get()  
-                                        
-                        #score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                        write_student_log(extract_directory, outlog)
-
+                        
+                        score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                        
                         submission.passed  = score[0]
                         submission.failed  = score[1]
                         submission.percent = score[2]
@@ -238,16 +228,22 @@ def api(request, action):
                              "message": score}
 
                 else:
+                    status = 400
                     response_data = {"status": 400, "type": "ERROR",
                              "message": "Use POST method"}
             else:
+                status = 400
                 response_data = {"status": 400, "type": "ERROR",
                              "message": "Invalid action"}
         else:
-            response_data = {"status": 400, "type": "ERROR",
+            status = 403
+            response_data = {"status": 403, "type": "ERROR",
                              "message": "Invalid student"}
     else:
+        status = 403
         response_data = {"status": 400,
                          "type": "ERROR", "message": "Invalid user"}
 
-    return JsonResponse(response_data, safe=False)
+    r = JsonResponse(response_data, safe=False)
+    r.status_code = status
+    return r
