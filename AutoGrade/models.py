@@ -17,7 +17,6 @@ import zipfile
 import json
 import os
 
-
 def other_files_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.assignment.course.id, instance.assignment.title.replace(" ","-").lower(), filename)
@@ -64,7 +63,7 @@ class Student(models.Model):
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
     
-    title           = models.CharField(max_length=64, null=False, default=None)
+    title           = models.CharField(max_length=64, null=False, default=None, unique=True)
     description     = models.TextField(max_length=8192, null=True, default=None)
     
     # Files
