@@ -22,7 +22,6 @@ try:
 except: 
 	pass
 
-
 logging.basicConfig(filename='submission.log')
 
 url = "##RUN_API_URL##"
@@ -70,11 +69,11 @@ def run_student_tests(target_folder, total_points, timeout):
 
     logging.debug("Capturing stdout")
   
-	try:
-    	from io import StringIO
+    try:
+        from cStringIO import StringIO
     except ImportError:
-    	from cStringIO import StringIO
-
+        from io import StringIO
+    
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
 
