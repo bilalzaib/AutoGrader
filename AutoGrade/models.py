@@ -63,7 +63,7 @@ class Student(models.Model):
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
     
-    title           = models.CharField(max_length=64, null=False, default=None, unique=True)
+    title           = models.CharField(max_length=64, null=False, default=None)
     description     = models.TextField(max_length=8192, null=True, default=None)
     
     # Files
@@ -77,6 +77,9 @@ class Assignment(models.Model):
     open_date = models.DateTimeField('open date', default=datetime.now)
     due_date = models.DateTimeField('due date', default=datetime.now)
     publish_date = models.DateTimeField('date published', default=datetime.now)
+
+    class Meta():
+        unique_together = ('course', 'title',)
 
     def __str__(self):
         return self.title
