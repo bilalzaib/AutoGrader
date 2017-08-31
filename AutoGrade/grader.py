@@ -82,7 +82,7 @@ def run_student_tests(target_folder, total_points, timeout):
     if p.is_alive():
         logging.debug("Terminating process [TIMEOUT]")
         p.terminate()
-        with open(out_file, 'r') as f:
+        with open(out_file, 'w') as f:
             f.write("\n\nProcess Terminated")
 
     with open(out_file) as f:

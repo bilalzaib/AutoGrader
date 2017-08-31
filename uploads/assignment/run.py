@@ -174,7 +174,7 @@ class Submission():
 				files = {'submission_file': open(submission_file, 'rb')}, 
 				data = data)
 		except requests.exceptions.RequestException as e: 
-			print("ERROR: {}").format(e)
+			print("ERROR: {}".format(e))
 			sys.exit(1)
 		finally:
 			try:
