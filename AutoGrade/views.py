@@ -41,7 +41,7 @@ def home(request):
 
     if user.is_staff or user.is_superuser:
         return HttpResponseRedirect(reverse('admin:index'))
-    
+
     form = EnrollForm()
     if request.method == "POST":
         form = EnrollForm(request.POST)
@@ -53,7 +53,7 @@ def home(request):
             if course:
                 already_registered = Student.objects.filter(pk=student.id, courses__id=course.id).exists()
                 print (already_registered)
-                if already_registered: 
+                if already_registered:
                     messages.warning(request, 'You have already registered that course')
                 else:
                     student.courses.add(course)
@@ -83,10 +83,10 @@ def signup(request):
             user = form.save()
             user.refresh_from_db()
             user.save()
-            
+
             student = Student.objects.create(user=user)
             student.save()
-            
+
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
             login(request, user)
@@ -103,7 +103,7 @@ def download(request):
     raw = request.GET.get('raw')
     action = request.GET.get('action')
 
-    # Check 
+    # Check
     if assignment_id:
         assignment = Assignment.objects.filter(id=assignment_id)
         if assignment.exists():
@@ -136,7 +136,7 @@ def download(request):
             response = HttpResponse(fh.read(), content_type=content_type)
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
-    
+
     raise Http404
 
 
@@ -147,7 +147,7 @@ def course(request, course_id, assignment_id=0):
 
     if not student:
         return redirect("home");
-        
+
     course = Course.objects.get(id=course_id)
 
     assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
@@ -184,7 +184,7 @@ def api(request, action):
             if (action == "submit_assignment"):
 
                 if request.method == 'POST':
-                    
+
                     assignment = Assignment.objects.get(id=request.POST.get('assignment'), open_date__lte=timezone.now())
 
                     if not assignment:
@@ -194,7 +194,7 @@ def api(request, action):
                         response_data = {"status": 200, "type": "SUCCESS",
                          "message": "Assignment submission date expired"}
                     else:
-                        submission = Submission(submission_file=request.FILES['submission_file'], 
+                        submission = Submission(submission_file=request.FILES['submission_file'],
                             assignment=assignment,
                             student=student)
                         submission.save()
@@ -208,9 +208,9 @@ def api(request, action):
 
                         # Move Instructor Test File
                         shutil.copy(assignment.instructor_test.url, extract_directory)
-                        
+
                         # Move Student Test File
-                        shutil.copy(assignment.student_test.url, extract_directory)                        
+                        shutil.copy(assignment.student_test.url, extract_directory)
 
                         # Running pytest for student submission.
                         queue = Queue()
@@ -225,8 +225,8 @@ def api(request, action):
                             score = (0,0,0)
                             outlog = "Process terminated."
                         else:
-                            score, outlog = queue.get()  
-                                        
+                            score, outlog = queue.get()
+
                         #score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
                         write_student_log(extract_directory, outlog)
 
@@ -263,8 +263,6 @@ def change_password(request):
             update_session_auth_hash(request, user)  # Important!
             messages.success(request, 'Your password was successfully updated!')
             return redirect('/autograde')
-        else:
-            messages.error(request, 'Please correct the error below.')
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'account/change_password.html', {

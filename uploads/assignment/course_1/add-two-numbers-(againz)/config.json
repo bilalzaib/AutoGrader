@@ -1,10 +1,10 @@
 {
+    "total_points": 25, 
+    "assignment": 2, 
     "modifiable_files": [
         "a01.py"
-    ],
-    "total_points": 25,
-    "assignment": 1,
-    "timeout": 3,
+    ], 
+    "timeout": 3, 
     "student_tests": [
         "test_student.py"
     ]

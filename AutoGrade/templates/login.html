@@ -2,20 +2,27 @@
 {% load bootstrap3 %} 
 
 {% block content %}
-  <h2>Log in to AutoGrader</h2>
   {% if form.errors %}
     {% bootstrap_messages %}
   {% endif %}
+  
+  
+  	<div class="row">
+		<div class="col col-sm-4"></div>
+		<div class="col col-sm-4">
+			<h2>Log in to AutoGrader</h2>
+			<form method="post" class="form">
+				{% csrf_token %}
+				{% bootstrap_form form %}
+				{% buttons %}
+					<button type="submit" class="btn btn-primary">
+						Login
+					</button>
+				{% endbuttons %}
+			</form>
+			<p class="signup__signin">Forgot your password? <a href="{% url 'password_reset' %}">Reset password</a></p>
+		</div>
+		<div class="col col-sm-4"></div>
+	</div>
 
-  <form method="post">
-    {% csrf_token %}
-
-    {% bootstrap_form form %}
-    {% buttons %}
-      <button type="submit" class="btn btn-primary">
-        Login
-      </button>
-    {% endbuttons %}
-  </form>
-  <p class="signup__signin">Forgot your password? <a href="{% url 'password_reset' %}">Reset password</a></p>
 {% endblock %}

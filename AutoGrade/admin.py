@@ -59,17 +59,33 @@ class AssignmentFormAdmin(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(AssignmentFormAdmin, self).__init__(*args, **kwargs)
-        instructor = Instructor.objects.filter(user=self.current_user).first()
-        self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
+        if not self.current_user.is_superuser:
+            instructor = Instructor.objects.filter(user=self.current_user).first()
+            self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
 
     class Meta:
         fields = '__all__'
         model = Assignment
 
+class OtherFilesInline(admin.StackedInline):
+    model       = OtherFile
+    #max_num    = 10
+    #extra      = 0
+
+# Hide Other File from admin index
+class OtherFileAdmin(admin.ModelAdmin):
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}
+
+admin.site.register(OtherFile, OtherFileAdmin)
+
 @admin.register(Assignment) 
 class AssignmentModelAdmin(admin.ModelAdmin):    
     form = AssignmentFormAdmin
-    #inlines = [SubmissionInline,]
+    inlines = [OtherFilesInline,]
 
     def get_form(self, request, *args, **kwargs):
          form = super(AssignmentModelAdmin, self).get_form(request, *args, **kwargs)
@@ -81,7 +97,7 @@ class AssignmentModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(course__instructor__user=request.user)
-
+    
 @admin.register(Submission) 
 class SubmissionModelAdmin(admin.ModelAdmin):
     def get_queryset(self, request):

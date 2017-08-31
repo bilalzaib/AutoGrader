@@ -17,6 +17,10 @@ import zipfile
 import json
 import os
 
+def other_files_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.assignment.course.id, instance.assignment.title.replace(" ","-").lower(), filename)
+
 def assignment_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.course.id, instance.title.replace(" ","-").lower(), filename)
@@ -43,7 +47,7 @@ class Course(models.Model):
     instructor = models.ForeignKey(Instructor, null=False, default=None)
     name = models.CharField(max_length=64)
     enroll_key = models.CharField(max_length=8, default=enroll_key, unique=True) # Secret key to enroll
-    course_id = models.CharField(max_length=6) # CS101
+    course_id = models.CharField(max_length=64) # CS101
 
     def __str__(self):
         return self.name
@@ -60,15 +64,12 @@ class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
     
     title           = models.CharField(max_length=64, null=False, default=None)
-    description     = models.TextField(max_length=512, null=True, default=None)
+    description     = models.TextField(max_length=8192, null=True, default=None)
     
     # Files
     instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
-    #config_file     = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     assignment_file = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
-
-    #assignment_files = FilerFileField(related_name="filer_assignment_files", null=True)
 
     total_points    = models.IntegerField(default=25)
     timeout         = models.IntegerField(default=3)
@@ -77,8 +78,15 @@ class Assignment(models.Model):
     due_date = models.DateTimeField('due date', default=datetime.now)
     publish_date = models.DateTimeField('date published', default=datetime.now)
 
+    class Meta():
+        unique_together = ('course', 'title',)
+
     def __str__(self):
         return self.title
+
+class OtherFile(models.Model):
+    file = models.FileField(upload_to=other_files_directory_path, null=False, default=None, storage=OverwriteStorage())
+    assignment = models.ForeignKey(Assignment)
 
 class Submission(models.Model):
     assignment      = models.ForeignKey(Assignment)
@@ -94,6 +102,7 @@ class Submission(models.Model):
 
     def __str__(self):
         return self.assignment.title + " (submission_id: " + str(self.id) + ")"
+
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
@@ -125,6 +134,10 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
     
+    other_files =  OtherFile.objects.filter(assignment=instance)
+    for other_file in other_files:
+        files.append(other_file.file.url)
+
     with open("uploads/assignment/run.py","r") as file:
         content = file.read()
         content = content.replace("##RUN_API_URL##", settings.RUN_API_URL)
@@ -132,4 +145,22 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
 
     for file in files:
         zip_file.write(file, os.path.basename(file))
+    zip_file.close()
+
+
+# Create zip file of Assignment
+@receiver(post_save, sender=OtherFile)
+def create_assignment_zip_file_other_file(sender, instance, created, **kwargs):
+    assignment_directory = assignment_directory_path(instance.assignment, "")
+    
+    print (instance)
+
+    # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
+    zip_full_path = assignment_directory + "assignment" + str(instance.assignment.id) + ".zip"
+
+    file = instance.file.url
+
+    # Update student's assignment zip file
+    zip_file = zipfile.ZipFile(zip_full_path, 'a', zipfile.ZIP_DEFLATED)
+    zip_file.write(file, os.path.basename(file))
     zip_file.close()

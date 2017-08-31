@@ -15,6 +15,13 @@ import re
 import time
 from datetime import datetime
 
+# Using input() in python 2 or 3
+try:
+	# set raw_input as input in python2 
+    input = raw_input
+except: 
+	pass
+
 logging.basicConfig(filename='submission.log')
 
 url = "##RUN_API_URL##"
@@ -61,12 +68,17 @@ def run_student_tests(target_folder, total_points, timeout):
     score = (0, 0, 0) # passed, failed, percent
 
     logging.debug("Capturing stdout")
-    from io import StringIO
+  
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from io import StringIO
+    
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
 
     import pytest
-    pytest.main(['--timeout=' + str(timeout)])
+    pytest.main(["--timeout=" + str(timeout)])
     logging.debug("Restoring stdout")
 
     sys.stdout = old_stdout
@@ -104,6 +116,16 @@ class Submission():
 			logging.error("No config file found")
 			sys.exit()
 
+	def save_cred(self, cred):
+		logging.error('Saving credentials to config file')		
+		self.config['email'] = cred['email']
+		self.config['submission_pass'] = cred['submission_pass']
+		
+		# Save File
+		with open(self.config_file_name, 'w') as file:
+			json.dump(self.config, file)
+
+
 	def get_cred(self):
 		if 'email' in self.config and 'submission_pass' in self.config :
 			logging.info('Using credentials of config file')
@@ -117,7 +139,7 @@ class Submission():
 				"email": input("Enter Email: "),
 				"submission_pass": input('Submission Password: '),
 			}
-			print()
+			print("")
 		return cred
 
 	def submit_assignment(self):
@@ -146,56 +168,64 @@ class Submission():
 		data['assignment'] = self.config['assignment']
 
 		logging.info('Sending submission file to server')	
-		r = requests.post(url + 'submit_assignment', 
-			files = {'submission_file': open(submission_file, 'rb')}, 
-			data = data)
 
 		try:
-			logging.info('Deleting submission file')
-			os.remove(submission_file)
-		except Exception:
-			logging.info('No submission file found')	
-			pass
-
+			r = requests.post(url + 'submit_assignment', 
+				files = {'submission_file': open(submission_file, 'rb')}, 
+				data = data)
+		except requests.exceptions.RequestException as e: 
+			print("ERROR: {}".format(e))
+			sys.exit(1)
+		finally:
+			try:
+				logging.info('Deleting submission file')
+				os.remove(submission_file)
+			except Exception:
+				logging.info('No submission file found')	
+				pass
 
 		if r.status_code == 200:
 			result_json = r.json()
-			if result_json['status'] == 200:
-				logging.error('Saving credentials to config file')		
-				self.config['email'] = cred['email']
-				self.config['submission_pass'] = cred['submission_pass']
-			else:
-				logging.error('Removing credentials from config file')		
-				try:
-					del self.config['email'];
-					del self.config['submission_pass'];
-				except Exception:
-					pass
-
-			# Save File
-			with open(self.config_file_name, 'w') as file:
-				json.dump(self.config, file)
+			
+			self.save_cred(cred)
 		
 			return r
+		elif r.status_code == 403:
+			logging.error('Login failed, Removing credentials from config file')		
+			try:
+				del self.config['email'];
+				del self.config['submission_pass'];
+			except Exception:
+				pass
+
+			with open(self.config_file_name, 'w') as file:
+				json.dump(self.config, file)
+
+			result_json = r.json()
+			sys.exit("ERROR: " + result_json['message'])
+		elif r.status_code == 400:
+			self.save_cred(cred)
+			result_json = r.json()
+			sys.exit("ERROR: " + result_json['message'])
 		else:
 			logging.error('Error code in response: ' + str(r.status_code))	
-			sys.exit("ERR: Invalid request")
+			sys.exit("ERROR: Invalid request")
 
 	def run(self):
 		if len(sys.argv) == 1:
-			sys.exit("ERR: No argument supplied")
+			sys.exit("ERROR: No argument supplied")
 		elif sys.argv[1] == "remote":
 			r = self.submit_assignment()
 			result = r.json()
-			result = result['message']
-			print ("RESPONSE: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
+			score = result['message']
+			print ("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
 			print ("NOTE: You can see your submission on web interface also.")
 		elif sys.argv[1] == "local":
 			(result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
 			print ("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
 			write_student_log(os.getcwd(), out)
 		else:
-			sys.exit("ERR: Invalid argument supplied")
+			sys.exit("ERROR: Invalid argument supplied")
 
 
 

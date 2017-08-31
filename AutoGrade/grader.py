@@ -7,7 +7,8 @@ import sys
 import re
 import time
 from datetime import datetime
-
+from multiprocessing import Process, Manager, Queue
+import tempfile
 
 def touch(fname, times=None):
     with open(fname, 'a'):
@@ -15,7 +16,7 @@ def touch(fname, times=None):
 
 def get_score_from_result_line(res_line, total_points):
     # case where we have failures and passes
-    match = re.match(r"=*\s(\d*)\sfailed,\s(\d*)\spassed,\s.*", res_line)
+    match = re.match(r"=*\s(\d*)\sfailed,\s(\d*)\spassed,?\s.*", res_line)
     passed = 0
     failed = 0
     if match:
@@ -39,8 +40,15 @@ def get_score_from_result_line(res_line, total_points):
     percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
     return (passed, failed, percent)
 
-def run_student_tests(q, target_folder, total_points, timeout):
-    # Disable networking for submission file
+def run_test(out_file, timeout):
+    with open(out_file, 'w') as f:
+        sys.stdout = f
+        import pytest
+        pytest.main(['--timeout=' + str(timeout)])
+        sys.stdout = sys.__stdout__
+ 
+def run_student_tests(target_folder, total_points, timeout):
+    # TODO: Disable networking for submission file
     # Source: https://gist.github.com/hangtwenty/9200597e3be274c79896
     # Source: https://github.com/miketheman/pytest-socket
     #import socket
@@ -61,28 +69,38 @@ def run_student_tests(q, target_folder, total_points, timeout):
     score = (0, 0, 0) # passed, failed, percent
 
     logging.debug("Capturing stdout")
-    from io import StringIO
-    old_stdout = sys.stdout
-    sys.stdout = mystdout = StringIO()
+    
+    out_file = "test-results" + ".log"
+    touch(out_file)    
+        
+    p = Process(target=run_test, args=(out_file, timeout,))
+    logging.debug("Starting test process for submission")
+    p.start()
+    p.join(timeout + 1) # Pytest will also timeout
 
-    import pytest
-    pytest.main(['--timeout=' + str(timeout)])
+    #In case process is stuck in infinite loop or something
+    if p.is_alive():
+        logging.debug("Terminating process [TIMEOUT]")
+        p.terminate()
+        with open(out_file, 'w') as f:
+            f.write("\n\nProcess Terminated")
+
+    with open(out_file) as f:
+        out = f.read()
+
     logging.debug("Restoring stdout")
-
-    sys.stdout = old_stdout
-    out = mystdout.getvalue()
 
     # print out
     res_line = out.splitlines()[-1]
     score = get_score_from_result_line(res_line, total_points)
 
     logging.debug("Restoring working directory ...")
+    os.chdir(cur_directory)
 
     logging.debug("Read test line [" + res_line.strip("=") + "]")
     logging.debug("Calculated score: " + str(score))
-    os.chdir(cur_directory)
 
-    q.put([score, out])
+    return [score, out]
 
 def write_student_log(student_assignment_folder, outlog):
     out_file = os.path.join(student_assignment_folder, "test-results" + ".log")

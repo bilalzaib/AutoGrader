@@ -2,14 +2,22 @@
 {% load bootstrap3 %} 
 
 {% block content %}
-  <h2>Sign up</h2>
-  <form method="post">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-      <button type="submit" class="btn btn-primary">
-        Sign Up
-      </button>
-    {% endbuttons %}
-  </form>
+
+	<div class="row">
+		<div class="col col-sm-4"></div>
+		<div class="col col-sm-4">
+			<h2>Sign up</h2>
+			<form method="post" class="form">
+				{% csrf_token %}
+				{% bootstrap_form form %}
+				{% buttons %}
+					<button type="submit" class="btn btn-primary">
+						Sign Up
+					</button>
+				{% endbuttons %}
+			</form>
+		</div>
+		<div class="col col-sm-4"></div>
+	</div>
+	
 {% endblock %}
