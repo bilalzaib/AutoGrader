@@ -132,6 +132,10 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
     
+    other_files =  OtherFile.objects.filter(assignment=instance)
+    for other_file in other_files:
+        files.append(other_file.file.url)
+
     with open("uploads/assignment/run.py","r") as file:
         content = file.read()
         content = content.replace("##RUN_API_URL##", settings.RUN_API_URL)
@@ -147,6 +151,8 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
 def create_assignment_zip_file_other_file(sender, instance, created, **kwargs):
     assignment_directory = assignment_directory_path(instance.assignment, "")
     
+    print (instance)
+
     # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
     zip_full_path = assignment_directory + "assignment" + str(instance.assignment.id) + ".zip"
 
