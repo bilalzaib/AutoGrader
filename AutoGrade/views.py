@@ -53,7 +53,6 @@ def home(request):
             course = Course.objects.filter(enroll_key=secret_key).first()
             if course:
                 already_registered = Student.objects.filter(pk=student.id, courses__id=course.id).exists()
-                print (already_registered)
                 if already_registered: 
                     messages.warning(request, 'You have already registered that course')
                 else:
@@ -101,6 +100,7 @@ def download(request):
     # TODO: break when user try to download Instructor Test file
     submission_id = request.GET.get('sid')
     assignment_id = request.GET.get('aid')
+    other_file_id = request.GET.get('ofid')
     raw = request.GET.get('raw')
     action = request.GET.get('action')
 
@@ -123,6 +123,10 @@ def download(request):
         submission = Submission.objects.get(id=submission_id)
         if submission:
             path = submission.get_log_file()
+    elif other_file_id:
+    	other_file = OtherFile.objects.get(id=other_file_id)
+    	if other_file:
+    		path = other_file.file.url
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
@@ -153,15 +157,18 @@ def course(request, course_id, assignment_id=0):
 
     assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
 
-    selected_assignment = None
-    submission_history = None
-    assignment_zip_file = None
+    selected_assignment 	= None
+    submission_history 		= None
+    assignment_zip_file 	= None
+    other_files 			= None
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
+        other_files = OtherFile.objects.filter(assignment=assignment_id)
         submission_history = Submission.objects.filter(student=student, assignment_id=assignment_id).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
 
     return render(request, 'course.html', {
+            'other_files': other_files,
             'assignment_zip_file': assignment_zip_file,
             'assignment_id': int(assignment_id),
             'course': course,

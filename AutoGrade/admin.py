@@ -59,8 +59,9 @@ class AssignmentFormAdmin(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(AssignmentFormAdmin, self).__init__(*args, **kwargs)
-        instructor = Instructor.objects.filter(user=self.current_user).first()
-        self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
+        if not self.current_user.is_superuser:
+            instructor = Instructor.objects.filter(user=self.current_user).first()
+            self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
 
     class Meta:
         fields = '__all__'
@@ -83,7 +84,7 @@ admin.site.register(OtherFile, OtherFileAdmin)
 
 @admin.register(Assignment) 
 class AssignmentModelAdmin(admin.ModelAdmin):    
-    #form = AssignmentFormAdmin
+    form = AssignmentFormAdmin
     inlines = [OtherFilesInline,]
 
     def get_form(self, request, *args, **kwargs):
