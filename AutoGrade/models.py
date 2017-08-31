@@ -43,7 +43,7 @@ class Course(models.Model):
     instructor = models.ForeignKey(Instructor, null=False, default=None)
     name = models.CharField(max_length=64)
     enroll_key = models.CharField(max_length=8, default=enroll_key, unique=True) # Secret key to enroll
-    course_id = models.CharField(max_length=6) # CS101
+    course_id = models.CharField(max_length=64) # CS101
 
     def __str__(self):
         return self.name
@@ -60,7 +60,7 @@ class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
     
     title           = models.CharField(max_length=64, null=False, default=None)
-    description     = models.TextField(max_length=512, null=True, default=None)
+    description     = models.TextField(max_length=8192, null=True, default=None)
     
     # Files
     instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
