@@ -45,6 +45,7 @@ def run_test(out_file, timeout):
         sys.stdout = f
         import pytest
         pytest.main(['--timeout=' + str(timeout)])
+        sys.stdout = sys.__stdout__
  
 def run_student_tests(target_folder, total_points, timeout):
     # TODO: Disable networking for submission file
