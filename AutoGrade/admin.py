@@ -66,10 +66,25 @@ class AssignmentFormAdmin(forms.ModelForm):
         fields = '__all__'
         model = Assignment
 
+class OtherFilesInline(admin.StackedInline):
+    model       = OtherFile
+    #max_num    = 10
+    #extra      = 0
+
+# Hide Other File from admin index
+class OtherFileAdmin(admin.ModelAdmin):
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}
+
+admin.site.register(OtherFile, OtherFileAdmin)
+
 @admin.register(Assignment) 
 class AssignmentModelAdmin(admin.ModelAdmin):    
-    form = AssignmentFormAdmin
-    #inlines = [SubmissionInline,]
+    #form = AssignmentFormAdmin
+    inlines = [OtherFilesInline,]
 
     def get_form(self, request, *args, **kwargs):
          form = super(AssignmentModelAdmin, self).get_form(request, *args, **kwargs)

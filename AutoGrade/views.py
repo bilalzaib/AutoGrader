@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from .models import Student, Course, Assignment, Submission
+from .models import Student, Course, Assignment, Submission, OtherFile
 from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
 from .grader import run_student_tests
@@ -210,12 +210,17 @@ def api(request, action):
                         zip_file.extractall(extract_directory)
                         zip_file.close()
 
-                        # Move Instructor Test File
+                        # Copy Instructor Test File
                         shutil.copy(assignment.instructor_test.url, extract_directory)
                         
-                        # Move Student Test File
+                        # Copy Student Test File
                         shutil.copy(assignment.student_test.url, extract_directory)                        
                         
+                        # Copy other files to Student directory
+                        other_files =  OtherFile.objects.filter(assignment=assignment)
+                        for other_file in other_files:
+                            shutil.copy(other_file.file.url, extract_directory)                        
+
                         score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
                         
                         submission.passed  = score[0]

@@ -17,6 +17,11 @@ import zipfile
 import json
 import os
 
+
+def other_files_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.assignment.course.id, instance.assignment.title.replace(" ","-").lower(), filename)
+
 def assignment_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.course.id, instance.title.replace(" ","-").lower(), filename)
@@ -65,10 +70,7 @@ class Assignment(models.Model):
     # Files
     instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
-    #config_file     = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     assignment_file = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
-
-    #assignment_files = FilerFileField(related_name="filer_assignment_files", null=True)
 
     total_points    = models.IntegerField(default=25)
     timeout         = models.IntegerField(default=3)
@@ -79,6 +81,10 @@ class Assignment(models.Model):
 
     def __str__(self):
         return self.title
+
+class OtherFile(models.Model):
+    file = models.FileField(upload_to=other_files_directory_path, null=False, default=None, storage=OverwriteStorage())
+    assignment = models.ForeignKey(Assignment)
 
 class Submission(models.Model):
     assignment      = models.ForeignKey(Assignment)
@@ -124,6 +130,10 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.student_test.url)
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
+
+    other_files =  OtherFile.objects.filter(assignment=instance)
+    for other_file in other_files:
+        files.append(other_file.file.url)
     
     with open("uploads/assignment/run.py","r") as file:
         content = file.read()
