@@ -54,10 +54,12 @@ class SubmissionInline(admin.TabularInline):
 
 
 class AssignmentFormAdmin(forms.ModelForm):
+    # Receive from get_form of AssignmentModalAdmin
+    current_user = None
+    
     def __init__(self, *args, **kwargs):
         super(AssignmentFormAdmin, self).__init__(*args, **kwargs)
-        instance = kwargs['instance']
-        instructor = instance.course.instructor
+        instructor = Instructor.objects.filter(user=self.current_user).first()
         self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
 
     class Meta:
@@ -68,6 +70,11 @@ class AssignmentFormAdmin(forms.ModelForm):
 class AssignmentModelAdmin(admin.ModelAdmin):    
     form = AssignmentFormAdmin
     #inlines = [SubmissionInline,]
+
+    def get_form(self, request, *args, **kwargs):
+         form = super(AssignmentModelAdmin, self).get_form(request, *args, **kwargs)
+         form.current_user = request.user
+         return form
 
     def get_queryset(self, request):
         qs = super(AssignmentModelAdmin, self).get_queryset(request)
