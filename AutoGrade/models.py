@@ -101,6 +101,7 @@ class Submission(models.Model):
     def __str__(self):
         return self.assignment.title + " (submission_id: " + str(self.id) + ")"
 
+
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
 def create_assignment_zip_file(sender, instance, created, **kwargs):
@@ -130,10 +131,6 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.student_test.url)
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
-
-    other_files =  OtherFile.objects.filter(assignment=instance)
-    for other_file in other_files:
-        files.append(other_file.file.url)
     
     with open("uploads/assignment/run.py","r") as file:
         content = file.read()
@@ -142,4 +139,20 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
 
     for file in files:
         zip_file.write(file, os.path.basename(file))
+    zip_file.close()
+
+
+# Create zip file of Assignment
+@receiver(post_save, sender=OtherFile)
+def create_assignment_zip_file_other_file(sender, instance, created, **kwargs):
+    assignment_directory = assignment_directory_path(instance.assignment, "")
+    
+    # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
+    zip_full_path = assignment_directory + "assignment" + str(instance.assignment.id) + ".zip"
+
+    file = instance.file.url
+
+    # Update student's assignment zip file
+    zip_file = zipfile.ZipFile(zip_full_path, 'a', zipfile.ZIP_DEFLATED)
+    zip_file.write(file, os.path.basename(file))
     zip_file.close()

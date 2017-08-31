@@ -97,7 +97,7 @@ class AssignmentModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(course__instructor__user=request.user)
-
+    
 @admin.register(Submission) 
 class SubmissionModelAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
