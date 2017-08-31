@@ -126,3 +126,4 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = 'home'
 
 RUN_API_URL = "http://127.0.0.1:8000/autograde/api/"
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
