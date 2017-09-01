@@ -34,6 +34,9 @@ import time
 import urllib
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
+
+
 @login_required(login_url='login')
 def home(request):
     user = request.user

@@ -10,6 +10,8 @@ from datetime import datetime
 from multiprocessing import Process, Manager, Queue
 import tempfile
 
+logger = logging.getLogger(__name__)
+
 def touch(fname, times=None):
     with open(fname, 'a'):
         os.utime(fname, times)
@@ -33,7 +35,7 @@ def get_score_from_result_line(res_line, total_points):
                 passed = 0
                 failed = int(match.group(1))
             else:
-                logging.error("Failed to parse score line: " + res_line)
+                logger.error("Failed to parse score line: " + res_line)
                 # TODO: throw exception
                 raise EnvironmentError("Failed to parse score line")
 
@@ -59,29 +61,29 @@ def run_student_tests(q, target_folder, total_points, timeout):
     #os.nice()
     #os.setuid()
 
-    logging.debug("Running student tests in: " +target_folder)
+    logger.debug("Running student tests in: " +target_folder)
     cur_directory = os.getcwd()
 
     init_file = os.path.join(target_folder, "__init__.py")
     touch(init_file)
 
-    logging.debug("Changing directory ... ")
+    logger.debug("Changing directory ... ")
     os.chdir(target_folder)
     score = (0, 0, 0) # passed, failed, percent
 
-    logging.debug("Capturing stdout")
+    logger.debug("Capturing stdout")
 
     out_file = "test-results" + ".log"
     touch(out_file)
 
     p = Process(target=run_test, args=(out_file, timeout,))
-    logging.debug("Starting test process for submission")
+    logger.debug("Starting test process for submission")
     p.start()
     p.join(timeout + 1) # Pytest will also timeout
 
     #In case process is stuck in infinite loop or something
     if p.is_alive():
-        logging.debug("Terminating process [TIMEOUT]")
+        logger.debug("Terminating process [TIMEOUT]")
         p.terminate()
         with open(out_file, 'w') as f:
             f.write("\n\nProcess Terminated due to timeout.")
@@ -89,33 +91,33 @@ def run_student_tests(q, target_folder, total_points, timeout):
     with open(out_file) as f:
         out = f.read()
 
-    logging.debug("Restoring stdout")
+    logger.debug("Restoring stdout")
 
     # print out
     res_line = out.splitlines()[-1]
     try:
         score = get_score_from_result_line(res_line, total_points)
     except EnvironmentError:
-        logging.error("===== EnvironmentError found. ======== ")
-        logging.error(out)
+        logger.error("===== EnvironmentError found. ======== ")
+        logger.error(out)
         out = "Your assignment had critical errors. Please review. If you think this is a system issue, please send details to your admin.\n" + out
         # write back to the out file
         with open(out_file, 'w') as f:
             f.write(out)
-        score = (0, 0, 0) # error means you get a 0 
+        score = (0, 0, 0) # error means you get a 0
 
 
-    logging.debug("Restoring working directory ...")
+    logger.debug("Restoring working directory ...")
     os.chdir(cur_directory)
 
-    logging.debug("Read test line [" + res_line.strip("=") + "]")
-    logging.debug("Calculated score: " + str(score))
+    logger.debug("Read test line [" + res_line.strip("=") + "]")
+    logger.debug("Calculated score: " + str(score))
 
     # return [score, out]
     q.put([score, out])
 
 def write_student_log(student_assignment_folder, outlog):
     out_file = os.path.join(student_assignment_folder, "test-results" + ".log")
-    logging.debug("Writing log to: " + out_file)
+    logger.debug("Writing log to: " + out_file)
     with open(out_file, "a") as text_file:
         text_file.write(outlog)
