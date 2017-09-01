@@ -192,9 +192,7 @@ class Submission():
 
         if r.status_code == 200:
             result_json = r.json()
-
             self.save_cred(cred)
-
             return r
         elif r.status_code == 403:
             logging.error('Login failed, Removing credentials from config file')
@@ -207,15 +205,26 @@ class Submission():
             with open(self.config_file_name, 'w') as file:
                 json.dump(self.config, file)
 
-            result_json = r.json()
-            sys.exit("ERROR: " + result_json['message'])
-        elif r.status_code == 400:
+            result = r.json()
+            
+            logging.error("="*80)      
+            logging.error("RESPONSE: " + result['message'])      
+            logging.error("="*80)
+            sys.exit(1)
+        elif r.status_code == 400 or r.status_code == 404:
             self.save_cred(cred)
-            result_json = r.json()
-            sys.exit("ERROR: " + result_json['message'])
+            result = r.json()
+            
+            logging.error("="*80)
+            logging.error("RESPONSE: " + result['message'])      
+            logging.error("="*80)
+            sys.exit(1)
         else:
-            logging.error('Error code in response: ' + str(r.status_code))
-            sys.exit("ERROR: Invalid request")
+            logging.error("="*80)      
+            logging.error("ERROR: Invalid request, status_code: " + str(r.status_code))      
+            logging.error("="*80)
+            sys.exit(1)
+
 
     def run(self):
         if len(sys.argv) == 1:
@@ -224,22 +233,14 @@ class Submission():
             r = self.submit_assignment()
             result = r.json()
             score = result['message']
-
-            if (result['status'] == 200):
-                logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
-                logging.info("NOTE: You can see your submission on web interface also.")
-            else:
-                logging.error("="*80)
-                logging.error(result['message'])
-                logging.error("="*80)
-
+            logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
+            logging.info("NOTE: You can see your submission on web interface also.")
         elif sys.argv[1] == "local":
             (result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
             logging.info("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
             write_student_log(os.getcwd(), out)
         else:
-            sys.exit("ERROR: Invalid argument supplied")
-
+            logging.error("ERROR: Invalid argument supplied")
 
 
 s = Submission()

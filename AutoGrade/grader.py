@@ -43,14 +43,22 @@ def get_score_from_result_line(res_line, total_points):
     percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
     return (passed, failed, percent)
 
-def run_test(out_file, timeout):
+def run_test(out_file, target_folder, timeout):
+    # chdir in main process create issue for django
+    logger.debug("Changing directory ... ")
+    cur_directory = os.getcwd()
+    os.chdir(target_folder)
+
     with open(out_file, 'w') as f:
         sys.stdout = f
         import pytest
         pytest.main(['--timeout=' + str(timeout)])
         sys.stdout = sys.__stdout__
 
-def run_student_tests(q, target_folder, total_points, timeout):
+    logger.debug("Restoring working directory ...")
+    os.chdir(cur_directory)
+
+def run_student_tests(target_folder, total_points, timeout):
     # TODO: Disable networking for submission file
     # Source: https://gist.github.com/hangtwenty/9200597e3be274c79896
     # Source: https://github.com/miketheman/pytest-socket
@@ -62,21 +70,18 @@ def run_student_tests(q, target_folder, total_points, timeout):
     #os.setuid()
 
     logger.debug("Running student tests in: " +target_folder)
-    cur_directory = os.getcwd()
 
     init_file = os.path.join(target_folder, "__init__.py")
     touch(init_file)
 
-    logger.debug("Changing directory ... ")
-    os.chdir(target_folder)
     score = (0, 0, 0) # passed, failed, percent
 
     logger.debug("Capturing stdout")
 
-    out_file = "test-results" + ".log"
+    out_file =  os.path.join(target_folder, "test-results" + ".log")
     touch(out_file)
 
-    p = Process(target=run_test, args=(out_file, timeout,))
+    p = Process(target=run_test, args=(os.path.basename(out_file), target_folder, timeout,))
     logger.debug("Starting test process for submission")
     p.start()
     p.join(timeout + 1) # Pytest will also timeout
@@ -91,8 +96,6 @@ def run_student_tests(q, target_folder, total_points, timeout):
     with open(out_file) as f:
         out = f.read()
 
-    logger.debug("Restoring stdout")
-
     # print out
     res_line = out.splitlines()[-1]
     try:
@@ -106,18 +109,7 @@ def run_student_tests(q, target_folder, total_points, timeout):
             f.write(out)
         score = (0, 0, 0) # error means you get a 0
 
-
-    logger.debug("Restoring working directory ...")
-    os.chdir(cur_directory)
-
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
 
-    # return [score, out]
-    q.put([score, out])
-
-def write_student_log(student_assignment_folder, outlog):
-    out_file = os.path.join(student_assignment_folder, "test-results" + ".log")
-    logger.debug("Writing log to: " + out_file)
-    with open(out_file, "a") as text_file:
-        text_file.write(outlog)
+    return [score, out]
