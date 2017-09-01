@@ -18,7 +18,7 @@ from django.core.urlresolvers import reverse
 from .models import Student, Course, Assignment, Submission
 from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
-from .grader import run_student_tests, write_student_log
+from .grader import run_student_tests
 
 from multiprocessing import Process, Manager, Queue
 
@@ -217,12 +217,12 @@ def api(request, action):
 
                 if request.method == 'POST':
 
-                    assignment = Assignment.objects.get(id=request.POST.get('assignment'), open_date__lte=timezone.now())
+                    assignment = Assignment.objects.filter(id=request.POST.get('assignment'), open_date__lte=timezone.now()).first()
 
                     if not assignment:
                         response_data = {"status": 404, "type": "ERROR",
                          "message": "Assignment doesn't exists"}
-                    elif timezone.now() > assignment.due_date:
+                    elif assignment and timezone.now() > assignment.due_date:
                         response_data = {"status": 400, "type": "ERROR",
                          "message": "Assignment submission date expired"}
                     else:
@@ -243,25 +243,9 @@ def api(request, action):
 
                         # Move Student Test File
                         shutil.copy(assignment.student_test.url, extract_directory)
-
-                        # Running pytest for student submission.
-                        queue = Queue()
-                        p = Process(target=run_student_tests, args=(queue, extract_directory, assignment.total_points, assignment.timeout,))
-                        p.start()
-                        #TODO: pytest stuck on infinite loop
-                        p.join(assignment.timeout)
-
-                        #In case process is stuck in infinite loop or something
-                        if p.is_alive():
-                            p.terminate()
-                            score = (0,0,0)
-                            outlog = "Process terminated."
-                        else:
-                            score, outlog = queue.get()
-
-                        #score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                        # write_student_log(extract_directory, outlog)
-
+        
+                        score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                        
                         submission.passed  = score[0]
                         submission.failed  = score[1]
                         submission.percent = score[2]
@@ -284,7 +268,9 @@ def api(request, action):
         response_data = {"status": 400,
                          "type": "ERROR", "message": "Invalid user"}
 
-    return JsonResponse(response_data, safe=False)
+    r = JsonResponse(response_data, safe=False)
+    r.status_code = response_data['status']
+    return r
 
 @login_required
 def change_password(request):

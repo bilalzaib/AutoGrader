@@ -209,7 +209,7 @@ class Submission():
 
             result_json = r.json()
             sys.exit("ERROR: " + result_json['message'])
-        elif r.status_code == 400:
+        elif r.status_code == 400 or r.status_code == 404:
             self.save_cred(cred)
             result_json = r.json()
             sys.exit("ERROR: " + result_json['message'])
@@ -225,13 +225,8 @@ class Submission():
             result = r.json()
             score = result['message']
 
-            if (result['status'] == 200):
-                logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
-                logging.info("NOTE: You can see your submission on web interface also.")
-            else:
-                logging.error("="*80)
-                logging.error(result['message'])
-                logging.error("="*80)
+            logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
+            logging.info("NOTE: You can see your submission on web interface also.")
 
         elif sys.argv[1] == "local":
             (result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
