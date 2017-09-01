@@ -165,7 +165,7 @@ def course(request, course_id, assignment_id=0):
     assignment_zip_file = None
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
-        submission_history = Submission.objects.filter(student=student).order_by("-publish_date")
+        submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
 
     return render(request, 'course.html', {
