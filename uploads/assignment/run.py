@@ -86,7 +86,7 @@ def run_student_tests(target_folder, total_points, timeout):
     sys.stdout = old_stdout
     out = mystdout.getvalue()
 
-    # print out
+    logging.debug(out)
     res_line = out.splitlines()[-1]
     score = get_score_from_result_line(res_line, total_points)
 
