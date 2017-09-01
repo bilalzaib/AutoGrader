@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load autograder_extras %}
-{% load bootstrap3 %} 
+{% load bootstrap3 %}
 
 {% block content %}
 	<div class="row">
@@ -28,19 +28,23 @@
 					</div>
 	 				<div class="col col-sm-6" style="text-align: right; padding-top: 5px;">
 	 					<p>
-	 						<i><small><b>Open Date: </b>{{ selected_assignment.open_date }}</small></i><br />
-	 						<i><small><b>Due Date: </b>{{ selected_assignment.due_date }}</small></i>
+	 						<small><b>Open Date: </b>{{ selected_assignment.open_date }}</small><br />
+	 						<small><b>Due Date: </b>{{ selected_assignment.due_date }}</small><br />
+                            <small>{{ time_left }}</small>
 	 					</p>
 	 				</div>
 	 			</div>
 				<hr />
 	 			<p>{{ selected_assignment.description }}</p>
 	 			<hr />
-	 			
+
 	 			<div class="row">
-	 				<div class="col-sm-4">
-		 				<h4>Assignment Files</h4>
-	 					<table class="table">
+                    <div class="col-sm-6" style="text-align: left">
+	 					<a target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=zip_file" class="btn btn-success btn-lg">Download Assignment Archive</a>
+	 				</div>
+	 				<div class="col-sm-6">
+		 				<h4>API Login Credentials</h4>
+	 					<!-- table class="table">
 	 						<tr>
 	 							<td>Assignment File</td>
 	 							<td><a class="btn btn-default btn-sm" target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=assignment_file">DOWNLOAD</a></td>
@@ -53,9 +57,11 @@
 	 							<td>Config File</td>
 	 							<td><a class="btn btn-default btn-sm"  target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=config_file">DOWNLOAD</a></td>
 	 						</tr>
-	 					</table>
+	 					</table -->
+            			<b><i>Email:</i></b> {{ user.email }}<br />
+            			<b><i>Submission Password:</i></b> {{ user.student.submission_pass }}
 	 				</div>
-	 				<div class="col-sm-4">
+	 				<!-- div class="col-sm-4">
 						<h4>Other Files</h4>
 	 					{% if other_files %}
 	 					<table class="table">
@@ -67,11 +73,9 @@
 	 						{% endfor %}
 	 					</table>
 	 					{% endif %}
-	 						
-	 				</div>
-	 				<div class="col-sm-4" style="text-align: right;">
-	 					<a target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=zip_file" class="btn btn-success btn-lg">Download as ZIP</a>
-	 				</div>
+
+	 				</div-->
+
 	 			</div>
 	 			<hr />
 	 			<h4>Submission History</h4>
@@ -105,7 +109,7 @@
 		</div>
 	</div>
 
-	<script>	
+	<script>
 	$(document).ready(function(){
 		$('#logModal').on('show.bs.modal', function (e) {
 			var loadurl = $(e.relatedTarget).data('load-url');

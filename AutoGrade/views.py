@@ -34,6 +34,9 @@ import time
 import urllib
 from datetime import datetime
 
+import dateutil.relativedelta
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -167,6 +170,15 @@ def course(request, course_id, assignment_id=0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
+        due_date = selected_assignment.due_date
+        now_time = timezone.now()
+
+        if due_date > now_time:
+            rd = dateutil.relativedelta.relativedelta (due_date, now_time)
+            time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
+        else:
+            time_left = "Submission date has passed!"
+
 
     return render(request, 'course.html', {
             'assignment_zip_file': assignment_zip_file,
@@ -174,7 +186,8 @@ def course(request, course_id, assignment_id=0):
             'course': course,
             'assignments': assignments,
             'selected_assignment': selected_assignment,
-            'submission_history': submission_history
+            'submission_history': submission_history,
+            'time_left' : time_left
         }
     )
 
