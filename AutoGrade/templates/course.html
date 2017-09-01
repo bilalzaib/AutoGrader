@@ -30,19 +30,27 @@
 	 					<p>
 	 						<small><b>Open Date: </b>{{ selected_assignment.open_date }}</small><br />
 	 						<small><b>Due Date: </b>{{ selected_assignment.due_date }}</small><br />
-                            <small>{{ time_left }}</small>
 	 					</p>
 	 				</div>
 	 			</div>
 				<hr />
-	 			<p>{{ selected_assignment.description }}</p>
+
+
+	 			<big><p>{{ selected_assignment.description }}</p></big>
+                <p>Files you need to modify : <strong>{{ modifiable_filename }}</strong></p>
 	 			<hr />
+
+                <div class="row">
+                    <div class="col col-sm-12">
+                        <div class='alert alert-{%if assignment_expired %}danger{% else %}success{% endif %}'>{{time_left}}</div>
+                    </div>
+                </div>
 
 	 			<div class="row">
                     <div class="col-sm-6" style="text-align: left">
 	 					<a target="_blank" href="{% url 'home' %}download/?aid={{ selected_assignment.id }}&action=zip_file" class="btn btn-success btn-lg">Download Assignment Archive</a>
 	 				</div>
-	 				<div class="col-sm-6">
+	 				<div class="col-sm-6" style="text-align: right">
 		 				<h4>API Login Credentials</h4>
 	 					<!-- table class="table">
 	 						<tr>
@@ -78,9 +86,24 @@
 
 	 			</div>
 	 			<hr />
-	 			<h4>Submission History</h4>
+                <div class='row'>
+                    <div class="col-sm-8" style="text-align: left">
+                        <h4>Submission Instructions</h4>
+                        <ol>
+                            <li>Download the archive and extract it in any folder.</li>
+                            <li>Complete the tasks required.</li>
+                            <li>Run local tests using: <code>python run.py local</code></li>
+                            <li>After local tests are successful, submit using: <code>python run.py remote</code></li>
+                            <li>Enter the login credentials shown on this page when prompted by the script.</li>
+                            <li>After submission, ensure your results are showing on this page.</li>
+                        </ol>
+                        <strong>Note:</strong> Do not modify files other than those mentioned in the assignment description.
+                    </div>
+                </div>
+                <hr />
+	 			<h3>Submission History</h3>
 	 			{% if submission_history %}
-	 				<table class="table">
+	 				<table class="table table-striped">
 	 					<tr>
 	 						<th>Sr.</t>
 	 						<th>Submission Date</th>

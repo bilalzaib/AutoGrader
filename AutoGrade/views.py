@@ -166,6 +166,10 @@ def course(request, course_id, assignment_id=0):
     selected_assignment = None
     submission_history = None
     assignment_zip_file = None
+    time_left = ''
+    modifiable_filename = None
+    expired = False
+
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
@@ -173,12 +177,17 @@ def course(request, course_id, assignment_id=0):
         due_date = selected_assignment.due_date
         now_time = timezone.now()
 
+
+
         if due_date > now_time:
             rd = dateutil.relativedelta.relativedelta (due_date, now_time)
             time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
         else:
             time_left = "Submission date has passed!"
+            expired = True
 
+        # only one assignment file for now
+        modifiable_filename = os.path.basename(selected_assignment.assignment_file.url)
 
     return render(request, 'course.html', {
             'assignment_zip_file': assignment_zip_file,
@@ -187,7 +196,9 @@ def course(request, course_id, assignment_id=0):
             'assignments': assignments,
             'selected_assignment': selected_assignment,
             'submission_history': submission_history,
-            'time_left' : time_left
+            'time_left' : time_left,
+            'modifiable_filename': modifiable_filename,
+            'assignment_expired': expired
         }
     )
 

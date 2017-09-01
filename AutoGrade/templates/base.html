@@ -34,11 +34,14 @@
     </ul>
   </div>
 </nav>
-  
+
 <div class="container">
   {% block content %}
   {% endblock %}
 </div>
 
+<div style='debug-note width: 100%; font-size: 8pt; color: #ccc; text-align: center'>
+    Server time: {% now 'r' %}
+</div>
 </body>
 </html>
