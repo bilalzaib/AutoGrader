@@ -46,8 +46,8 @@ def run_test(out_file, timeout):
         import pytest
         pytest.main(['--timeout=' + str(timeout)])
         sys.stdout = sys.__stdout__
- 
-def run_student_tests(target_folder, total_points, timeout):
+
+def run_student_tests(q, target_folder, total_points, timeout):
     # TODO: Disable networking for submission file
     # Source: https://gist.github.com/hangtwenty/9200597e3be274c79896
     # Source: https://github.com/miketheman/pytest-socket
@@ -57,11 +57,11 @@ def run_student_tests(target_folder, total_points, timeout):
     #socket.socket = guard
     #os.nice()
     #os.setuid()
-    
+
     logging.debug("Running student tests in: " +target_folder)
     cur_directory = os.getcwd()
 
-    init_file = os.path.join(target_folder, "__init__.py")  
+    init_file = os.path.join(target_folder, "__init__.py")
     touch(init_file)
 
     logging.debug("Changing directory ... ")
@@ -69,10 +69,10 @@ def run_student_tests(target_folder, total_points, timeout):
     score = (0, 0, 0) # passed, failed, percent
 
     logging.debug("Capturing stdout")
-    
+
     out_file = "test-results" + ".log"
-    touch(out_file)    
-        
+    touch(out_file)
+
     p = Process(target=run_test, args=(out_file, timeout,))
     logging.debug("Starting test process for submission")
     p.start()
@@ -100,7 +100,8 @@ def run_student_tests(target_folder, total_points, timeout):
     logging.debug("Read test line [" + res_line.strip("=") + "]")
     logging.debug("Calculated score: " + str(score))
 
-    return [score, out]
+    # return [score, out]
+    q.put([score, out])
 
 def write_student_log(student_assignment_folder, outlog):
     out_file = os.path.join(student_assignment_folder, "test-results" + ".log")

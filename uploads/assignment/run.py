@@ -17,12 +17,14 @@ from datetime import datetime
 
 # Using input() in python 2 or 3
 try:
-	# set raw_input as input in python2 
+    # set raw_input as input in python2
     input = raw_input
-except: 
-	pass
+except:
+    pass
 
-logging.basicConfig(filename='submission.log')
+# logging.basicConfig(filename='submission.log')
+logging.basicConfig(level=logging.DEBUG)
+
 
 url = "##RUN_API_URL##"
 
@@ -60,7 +62,7 @@ def run_student_tests(target_folder, total_points, timeout):
     logging.debug("Running student tests in: " + target_folder)
     cur_directory = os.getcwd()
 
-    init_file = os.path.join(target_folder, "__init__.py")  
+    init_file = os.path.join(target_folder, "__init__.py")
     touch(init_file)
 
     logging.debug("Changing directory ... ")
@@ -68,12 +70,12 @@ def run_student_tests(target_folder, total_points, timeout):
     score = (0, 0, 0) # passed, failed, percent
 
     logging.debug("Capturing stdout")
-  
+
     try:
         from cStringIO import StringIO
     except ImportError:
         from io import StringIO
-    
+
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
 
@@ -103,129 +105,136 @@ def write_student_log(student_assignment_folder, outlog):
         text_file.write(outlog)
 
 class Submission():
-	config = {}
-	config_file_name = "config.json"
+    config = {}
+    config_file_name = "config.json"
 
-	def __init__(self):
-		logging.info('Initiated')
-		try:
-			logging.info('Reading config file')
-			with open(self.config_file_name) as file:
-				self.config = json.load(file)
-		except Exception:
-			logging.error("No config file found")
-			sys.exit()
+    def __init__(self):
+        logging.info('Initiated')
+        try:
+            logging.info('Reading config file')
+            with open(self.config_file_name) as file:
+                self.config = json.load(file)
+        except Exception:
+            logging.error("No config file found")
+            sys.exit()
 
-	def save_cred(self, cred):
-		logging.error('Saving credentials to config file')		
-		self.config['email'] = cred['email']
-		self.config['submission_pass'] = cred['submission_pass']
-		
-		# Save File
-		with open(self.config_file_name, 'w') as file:
-			json.dump(self.config, file)
+    def save_cred(self, cred):
+        logging.info('Saving credentials to config file')
+        self.config['email'] = cred['email']
+        self.config['submission_pass'] = cred['submission_pass']
+
+        # Save File
+        with open(self.config_file_name, 'w') as file:
+            json.dump(self.config, file)
 
 
-	def get_cred(self):
-		if 'email' in self.config and 'submission_pass' in self.config :
-			logging.info('Using credentials of config file')
-			cred = {
-				"email": self.config['email'],
-				"submission_pass": self.config['submission_pass'],
-			}
-		else:
-			logging.info('Asking for API login details')
-			cred = {
-				"email": input("Enter Email: "),
-				"submission_pass": input('Submission Password: '),
-			}
-			print("")
-		return cred
+    def get_cred(self):
+        if 'email' in self.config and 'submission_pass' in self.config :
+            logging.info('Using credentials of config file')
+            cred = {
+                "email": self.config['email'],
+                "submission_pass": self.config['submission_pass'],
+            }
+        else:
+            logging.info('Asking for API login details')
+            cred = {
+                "email": input("Enter Email: "),
+                "submission_pass": input('Submission Password: '),
+            }
+            logging.info("")
+        return cred
 
-	def submit_assignment(self):
-		submission_file = "_submission.zip"
+    def submit_assignment(self):
+        submission_file = "_submission.zip"
 
-		try:
-			logging.info('Deleting old submission file')
-			os.remove(submission_file)
-		except Exception:
-			logging.info('No submission file found')	
-			pass
+        try:
+            logging.info('Deleting old submission file')
+            os.remove(submission_file)
+        except Exception:
+            logging.info('No submission file found')
+            pass
 
-		modifiable_files 	= self.config['modifiable_files']
+        modifiable_files     = self.config['modifiable_files']
 
-		zip_file = zipfile.ZipFile(submission_file, 'w', zipfile.ZIP_DEFLATED)
-		files = modifiable_files
+        zip_file = zipfile.ZipFile(submission_file, 'w', zipfile.ZIP_DEFLATED)
+        files = modifiable_files
 
-		logging.info('Creating compressed submission file')	
-		for file in files:
-			if file != []:
-				zip_file.write(file)
-		zip_file.close()
-		logging.info('Closing zipped submission file')	
+        logging.info('Creating compressed submission file')
+        for file in files:
+            if file != []:
+                zip_file.write(file)
+        zip_file.close()
+        logging.info('Closing zipped submission file')
 
-		cred = data = self.get_cred()
-		data['assignment'] = self.config['assignment']
+        cred = data = self.get_cred()
+        data['assignment'] = self.config['assignment']
 
-		logging.info('Sending submission file to server')	
+        logging.info('Sending submission file to server')
 
-		try:
-			r = requests.post(url + 'submit_assignment', 
-				files = {'submission_file': open(submission_file, 'rb')}, 
-				data = data)
-		except requests.exceptions.RequestException as e: 
-			print("ERROR: {}".format(e))
-			sys.exit(1)
-		finally:
-			try:
-				logging.info('Deleting submission file')
-				os.remove(submission_file)
-			except Exception:
-				logging.info('No submission file found')	
-				pass
+        try:
+            r = requests.post(url + 'submit_assignment',
+                files = {'submission_file': open(submission_file, 'rb')},
+                data = data)
+        except requests.exceptions.RequestException as e:
+            logging.error("ERROR: {}".format(e))
+            sys.exit(1)
+        finally:
+            try:
+                logging.info('Deleting submission file')
+                os.remove(submission_file)
+            except Exception:
+                logging.info('No submission file found')
+                pass
 
-		if r.status_code == 200:
-			result_json = r.json()
-			
-			self.save_cred(cred)
-		
-			return r
-		elif r.status_code == 403:
-			logging.error('Login failed, Removing credentials from config file')		
-			try:
-				del self.config['email'];
-				del self.config['submission_pass'];
-			except Exception:
-				pass
+        if r.status_code == 200:
+            result_json = r.json()
 
-			with open(self.config_file_name, 'w') as file:
-				json.dump(self.config, file)
+            self.save_cred(cred)
 
-			result_json = r.json()
-			sys.exit("ERROR: " + result_json['message'])
-		elif r.status_code == 400:
-			self.save_cred(cred)
-			result_json = r.json()
-			sys.exit("ERROR: " + result_json['message'])
-		else:
-			logging.error('Error code in response: ' + str(r.status_code))	
-			sys.exit("ERROR: Invalid request")
+            return r
+        elif r.status_code == 403:
+            logging.error('Login failed, Removing credentials from config file')
+            try:
+                del self.config['email'];
+                del self.config['submission_pass'];
+            except Exception:
+                pass
 
-	def run(self):
-		if len(sys.argv) == 1:
-			sys.exit("ERROR: No argument supplied")
-		elif sys.argv[1] == "remote":
-			r = self.submit_assignment()
-			result = r.json()
-			score = result['message']
-			print ("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
-			print ("NOTE: You can see your submission on web interface also.")
-		elif sys.argv[1] == "local":
-			(result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
-			print ("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
-			write_student_log(os.getcwd(), out)
-		else:
-			sys.exit("ERROR: Invalid argument supplied")
+            with open(self.config_file_name, 'w') as file:
+                json.dump(self.config, file)
+
+            result_json = r.json()
+            sys.exit("ERROR: " + result_json['message'])
+        elif r.status_code == 400:
+            self.save_cred(cred)
+            result_json = r.json()
+            sys.exit("ERROR: " + result_json['message'])
+        else:
+            logging.error('Error code in response: ' + str(r.status_code))
+            sys.exit("ERROR: Invalid request")
+
+    def run(self):
+        if len(sys.argv) == 1:
+            sys.exit("ERROR: No argument supplied")
+        elif sys.argv[1] == "remote":
+            r = self.submit_assignment()
+            result = r.json()
+            score = result['message']
+
+            if (result['status'] == 200):
+                logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " percent: " + str(score[2]))
+                logging.info("NOTE: You can see your submission on web interface also.")
+            else:
+                logging.error("="*80)
+                logging.error(result['message'])
+                logging.error("="*80)
+
+        elif sys.argv[1] == "local":
+            (result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
+            logging.info("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]) + " percent: " + str(result[2]))
+            write_student_log(os.getcwd(), out)
+        else:
+            sys.exit("ERROR: Invalid argument supplied")
 
 
 

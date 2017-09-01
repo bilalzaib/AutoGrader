@@ -188,10 +188,10 @@ def api(request, action):
                     assignment = Assignment.objects.get(id=request.POST.get('assignment'), open_date__lte=timezone.now())
 
                     if not assignment:
-                        response_data = {"status": 200, "type": "SUCCESS",
+                        response_data = {"status": 404, "type": "ERROR",
                          "message": "Assignment doesn't exists"}
                     elif timezone.now() > assignment.due_date:
-                        response_data = {"status": 200, "type": "SUCCESS",
+                        response_data = {"status": 400, "type": "ERROR",
                          "message": "Assignment submission date expired"}
                     else:
                         submission = Submission(submission_file=request.FILES['submission_file'],
