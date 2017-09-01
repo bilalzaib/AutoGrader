@@ -35,7 +35,8 @@ def get_score_from_result_line(res_line, total_points):
             else:
                 logging.error("Failed to parse score line: " + res_line)
                 # TODO: throw exception
-                return (0,0,0)
+                raise EnvironmentError("Failed to parse score line")
+
 
     percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
     return (passed, failed, percent)
@@ -83,7 +84,7 @@ def run_student_tests(q, target_folder, total_points, timeout):
         logging.debug("Terminating process [TIMEOUT]")
         p.terminate()
         with open(out_file, 'w') as f:
-            f.write("\n\nProcess Terminated")
+            f.write("\n\nProcess Terminated due to timeout.")
 
     with open(out_file) as f:
         out = f.read()
@@ -92,7 +93,17 @@ def run_student_tests(q, target_folder, total_points, timeout):
 
     # print out
     res_line = out.splitlines()[-1]
-    score = get_score_from_result_line(res_line, total_points)
+    try:
+        score = get_score_from_result_line(res_line, total_points)
+    except EnvironmentError:
+        logging.error("===== EnvironmentError found. ======== ")
+        logging.error(out)
+        out = "Your assignment had critical errors. Please review. If you think this is a system issue, please send details to your admin.\n" + out
+        # write back to the out file
+        with open(out_file, 'w') as f:
+            f.write(out)
+        score = (0, 0, 0) # error means you get a 0 
+
 
     logging.debug("Restoring working directory ...")
     os.chdir(cur_directory)

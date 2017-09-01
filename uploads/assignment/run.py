@@ -155,6 +155,10 @@ class Submission():
             pass
 
         modifiable_files     = self.config['modifiable_files']
+        for mf in modifiable_files:
+            if not os.path.exists(mf):
+                logging.error("Required assignment file not found: ", mf)
+                sys.exit("ERROR: needed file not found")
 
         zip_file = zipfile.ZipFile(submission_file, 'w', zipfile.ZIP_DEFLATED)
         files = modifiable_files

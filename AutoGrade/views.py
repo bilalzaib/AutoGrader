@@ -233,7 +233,7 @@ def api(request, action):
                             score, outlog = queue.get()
 
                         #score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                        write_student_log(extract_directory, outlog)
+                        # write_student_log(extract_directory, outlog)
 
                         submission.passed  = score[0]
                         submission.failed  = score[1]
