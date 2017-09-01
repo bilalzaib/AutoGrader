@@ -127,7 +127,12 @@ def download(request):
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             if raw:
-                url = urllib.request.pathname2url(file_path)
+                try:
+                    url = urllib.request.pathname2url(file_path)
+                except AttributeError:
+                    # fix for python2 compatability idiocy
+                    url = urllib.pathname2url(file_path)
+
                 content_type = mimetypes.guess_type(url)[0]
                 if not content_type:
                     content_type = "text/plain"
