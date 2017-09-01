@@ -54,6 +54,7 @@ class Course(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # name, email, password
+    email_confirmed = models.BooleanField(default=False)
     submission_pass = models.CharField(max_length=12, default=submission_key) 
     courses = models.ManyToManyField(Course)
 
