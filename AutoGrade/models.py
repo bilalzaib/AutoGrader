@@ -17,6 +17,15 @@ import zipfile
 import json
 import os
 
+QUEUE       = '0'
+EXECUTING   = '1'
+DONE        = '2'
+SUBMISSION_STATUS = (
+    (QUEUE, 'Queue'),
+    (EXECUTING, 'Executing'),
+    (DONE, 'Processed'),
+)
+
 def other_files_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.assignment.course.id, instance.assignment.title.replace(" ","-").lower(), filename)
@@ -104,6 +113,11 @@ class Submission(models.Model):
     def __str__(self):
         return self.assignment.title + " (submission_id: " + str(self.id) + ")"
 
+class SubmissionQueue(models.Model):
+    submission  = models.OneToOneField(Submission, on_delete=models.CASCADE)
+    status      = models.CharField(max_length=1, choices=SUBMISSION_STATUS)
+    date        = models.DateTimeField('date', default=datetime.now)
+    timeout     = models.IntegerField(default=3) # Help in predicting waiting time
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)

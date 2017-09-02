@@ -22,11 +22,12 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from .models import Student, Course, Assignment, Submission
+from .models import Student, Course, Assignment, Submission, SubmissionQueue, SUBMISSION_STATUS, QUEUE, EXECUTING, DONE
 from .forms import SignUpForm, EnrollForm
 from django.contrib import messages
 from .grader import run_student_tests
 
+from threading import Thread
 from multiprocessing import Process, Manager, Queue
 
 import mimetypes
@@ -40,12 +41,10 @@ import re
 import time
 import urllib
 from datetime import datetime
-
 import dateutil.relativedelta
-
+import multiprocessing
 
 logger = logging.getLogger(__name__)
-
 
 @login_required(login_url='login')
 def home(request):
@@ -220,8 +219,6 @@ def course(request, course_id, assignment_id=0):
         due_date = selected_assignment.due_date
         now_time = timezone.now()
 
-
-
         if due_date > now_time:
             rd = dateutil.relativedelta.relativedelta (due_date, now_time)
             time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
@@ -241,7 +238,8 @@ def course(request, course_id, assignment_id=0):
             'submission_history': submission_history,
             'time_left' : time_left,
             'modifiable_filename': modifiable_filename,
-            'assignment_expired': expired
+            'assignment_expired': expired,
+            'SUBMISSION_STATUS': SUBMISSION_STATUS
         }
     )
 
@@ -257,9 +255,7 @@ def api(request, action):
         if (student.exists()):
             student = student[0]
             if (action == "submit_assignment"):
-
                 if request.method == 'POST':
-
                     assignment = Assignment.objects.filter(id=request.POST.get('assignment'), open_date__lte=timezone.now()).first()
 
                     if not assignment:
@@ -269,46 +265,97 @@ def api(request, action):
                         response_data = {"status": 400, "type": "ERROR",
                          "message": "Assignment submission date expired"}
                     else:
-                        submission = Submission(submission_file=request.FILES['submission_file'],
-                            assignment=assignment,
-                            student=student)
-                        submission.save()
+                        # Solve bruteforcing...
+                        student_submission_in_queue = SubmissionQueue.objects.filter(submission__student=student, status__in=[QUEUE, EXECUTING]).count()
 
-                        submission_file_url = submission.submission_file.url
-                        extract_directory = submission_file_url.replace(".zip","/")
+                        if student_submission_in_queue > 0:
+                            response_data = {"status": 400, "type": "ERROR",
+                                "message": "Your submission is already in queue."}
+                        else:
+                            submission = Submission(submission_file=request.FILES['submission_file'],
+                                assignment=assignment,
+                                student=student)
+                            submission.save()
 
-                        zip_file = zipfile.ZipFile(submission.submission_file.url, 'r')
-                        zip_file.extractall(extract_directory)
-                        zip_file.close()
+                            submission_file_url = submission.submission_file.url
+                            extract_directory = submission_file_url.replace(".zip","/")
 
-                        # Move Instructor Test File
-                        shutil.copy(assignment.instructor_test.url, extract_directory)
+                            try: 
+                                zip_file = zipfile.ZipFile(submission.submission_file.url, 'r')
+                                zip_file.extractall(extract_directory)
+                                zip_file.close()
 
-                        # Move Student Test File
-                        shutil.copy(assignment.student_test.url, extract_directory)
-        
-                        score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                        
-                        submission.passed  = score[0]
-                        submission.failed  = score[1]
-                        submission.percent = score[2]
+                                # Move Instructor Test File
+                                shutil.copy(assignment.instructor_test.url, extract_directory)
 
-                        submission.save()
+                                # Move Student Test File
+                                shutil.copy(assignment.student_test.url, extract_directory)
 
-                        response_data = {"status": 200, "type": "SUCCESS",
-                             "message": score}
+                                # Submission Queue
+                                submission_queue = SubmissionQueue(submission=submission, status=QUEUE, timeout=assignment.timeout)
+                                submission_queue.save()
 
-                else:
+                                current_processes = SubmissionQueue.objects.filter(status__in=[EXECUTING, QUEUE]).count()
+
+                                if current_processes < multiprocessing.cpu_count():
+                                    submission_queue.status = EXECUTING
+                                    submission_queue.save()
+
+                                    score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                                
+                                    submission_queue.status = DONE
+                                    submission_queue.save()
+
+                                    submission.passed  = score[0]
+                                    submission.failed  = score[1]
+                                    submission.percent = score[2]
+                                    submission.save()
+
+                                    def run_test_for_next_queue():                                    
+                                        submission_queue = SubmissionQueue.objects.filter(status__in=[QUEUE]).order_by('-status').first()    
+                                        while submission_queue:
+                                            submission_queue.status = EXECUTING
+                                            submission_queue.save()
+
+                                            submission = Assignment.objects.get(pk=submission_queue.assignment)
+                                            extract_directory = submission.submission_file.url.replace(".zip","/")                                        
+
+                                            score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+
+                                            submission.passed  = score[0]
+                                            submission.failed  = score[1]
+                                            submission.percent = score[2]
+                                            submission.save()
+                                        
+                                            submission_queue.status = DONE
+                                            submission_queue.save()
+
+                                            next_queue = SubmissionQueue.objects.filter(status__in=[QUEUE]).order_by('-status').first()    
+
+
+                                    # Start thread for testing queued submissions
+                                    # NOTE: There could be max thread "multiprocessing.cpu_count()" threads eg 8.
+                                    Thread(target=run_test_for_next_queue).start()
+
+                                    response_data = {"status": 200, "type": "SUCCESS",
+                                         "message": score}
+                                else:
+                                    response_data = {"status": 400, "type": "SUCCESS",
+                                         "message": "Your submission is added to queue, you can view result in web interface."}
+                            except Expception:
+                                response_data = {"status": 400, 
+                                    "type": "ERROR", "message": "Invalid submission found"}
+                else: # request.method == 'POST'
                     response_data = {"status": 400, "type": "ERROR",
                              "message": "Use POST method"}
-            else:
+            else: # action == "submit_assignment"
                 response_data = {"status": 400, "type": "ERROR",
                              "message": "Invalid action"}
         else:
-            response_data = {"status": 400, "type": "ERROR",
+            response_data = {"status": 403, "type": "ERROR",
                              "message": "Invalid student"}
     else:
-        response_data = {"status": 400,
+        response_data = {"status": 403,
                          "type": "ERROR", "message": "Invalid user"}
 
     r = JsonResponse(response_data, safe=False)

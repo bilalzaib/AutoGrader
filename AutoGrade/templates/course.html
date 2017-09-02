@@ -110,6 +110,7 @@
 	 						<th>Passed</th>
 	 						<th>Failed</th>
 	 						<th>Percent</th>
+	 						<th>Status</th>
 	 						<th>Log</th>
 	 					</tr>
 	 					{% for submission in submission_history %}
@@ -119,6 +120,7 @@
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
 	 						<td>{{ submission.percent }}</td>
+	 						<td>{{ submission.submissionqueue.status|submission_queue_status }}</td>
 	 						<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&raw=1" class="btn btn-info btn-sm">VIEW</a></td>
 	 					</tr>
 	 					{% endfor %}
