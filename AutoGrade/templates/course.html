@@ -119,7 +119,7 @@
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
 	 						<td>{{ submission.percent }}</td>
-	 						<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&raw=1" class="btn btn-info btn-sm">VIEW</a></td>
+	 						<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=log_file&raw=1" class="btn btn-info btn-sm">VIEW</a></td>
 	 					</tr>
 	 					{% endfor %}
 	 				</table>
