@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
@@ -169,7 +170,10 @@ def download(request):
                 return Http404
     elif submission_id:
         submission = Submission.objects.get(id=submission_id)
-        if submission:
+        # Download modifiable_file of student when user is staff or admin
+        if submission and action == "modifiable_file" and (request.user.is_staff or request.user.is_superuser):
+            path = submission.get_modifiable_file()
+        elif submission:
             path = submission.get_log_file()
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -329,3 +333,14 @@ def change_password(request):
     return render(request, 'account/change_password.html', {
         'form': form
     })
+
+@staff_member_required
+def assignment_report(request, assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    submissions = assignment.get_student_latest_submissions()
+    return render(request, 'admin/assignment_report.html', {
+        'submissions': submissions,
+        'assignment': assignment,
+        'generated_on': timezone.now()
+    })
+

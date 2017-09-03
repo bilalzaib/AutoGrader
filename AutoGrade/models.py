@@ -58,8 +58,9 @@ class Student(models.Model):
     submission_pass = models.CharField(max_length=12, default=submission_key) 
     courses = models.ManyToManyField(Course)
 
-    def __str__(self):
-        return self.user.username
+    def get_roll_number(self):
+        return self.user.email.split("@")[0]
+
 
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
@@ -82,6 +83,17 @@ class Assignment(models.Model):
     class Meta():
         unique_together = ('course', 'title',)
 
+    def get_student_latest_submissions(self):
+        # TODO: Try to acheive this by sub queries using Django ORM
+        # Get students of this course
+        students = Student.objects.filter(courses=self.course)
+        submissions = []
+        for student in students:
+            submission = Submission.objects.filter(student=student).order_by("-publish_date").first()
+            submissions.append(submission)
+
+        return submissions
+
     def __str__(self):
         return self.title
 
@@ -97,6 +109,9 @@ class Submission(models.Model):
     failed          = models.IntegerField(default=0)
     percent         = models.FloatField(default=0)
     publish_date    = models.DateTimeField('date published', default=datetime.now)
+
+    def get_modifiable_file(self):
+        return self.submission_file.url.replace(".zip","")  + "/" + os.path.basename(self.assignment.assignment_file.url)
 
     def get_log_file(self):
         return self.submission_file.url.replace(".zip","")  + "/test-results.log"
@@ -154,8 +169,6 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
 def create_assignment_zip_file_other_file(sender, instance, created, **kwargs):
     assignment_directory = assignment_directory_path(instance.assignment, "")
     
-    print (instance)
-
     # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
     zip_full_path = assignment_directory + "assignment" + str(instance.assignment.id) + ".zip"
 

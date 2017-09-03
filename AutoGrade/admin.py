@@ -1,8 +1,12 @@
+from django.conf import settings
 from django.contrib import admin
 from django.db.models import Max, Count
 from django.contrib.auth.models import User
 from django import forms
 from .models import *
+from django.contrib import admin
+from django.utils.html import format_html
+from django.core.urlresolvers import reverse
 
 class UserInline(admin.StackedInline):
     model = User
@@ -82,10 +86,20 @@ class OtherFileAdmin(admin.ModelAdmin):
 
 admin.site.register(OtherFile, OtherFileAdmin)
 
+
+
 @admin.register(Assignment) 
 class AssignmentModelAdmin(admin.ModelAdmin):    
+
+    def assignment_report(self, obj):
+        return '<a target="_blank" href="' + reverse("home") + 'assignment_report/' + str(obj.id) + '">Show Report</a>'
+
+    assignment_report.short_description = 'Show Report'
+    assignment_report.allow_tags = True
+
     form = AssignmentFormAdmin
     inlines = [OtherFilesInline,]
+    list_display = ('title', 'assignment_file', 'due_date', 'open_date', 'assignment_report')
 
     def get_form(self, request, *args, **kwargs):
          form = super(AssignmentModelAdmin, self).get_form(request, *args, **kwargs)
@@ -97,7 +111,7 @@ class AssignmentModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(course__instructor__user=request.user)
-    
+
 @admin.register(Submission) 
 class SubmissionModelAdmin(admin.ModelAdmin):
     def get_queryset(self, request):

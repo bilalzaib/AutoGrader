@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Assignment Report #{{assignment.id}} - {{assignment.title}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  {% load bootstrap3 %}
+
+  {# Load CSS and JavaScript #}
+  {% bootstrap_css %}
+  <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
+  {% bootstrap_javascript %}
+  <style>
+  	@media print
+	{    
+	    .no-print, .no-print *
+	    {
+	        display: none !important;
+	    }
+	}
+  	.center {
+  		text-align: center;
+  	}
+  	.right {
+  		text-align: right;
+  	}
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+<div class="row">
+	<div class="col col-sm-12">
+		{% if submissions %}
+			<h2 class="center">Assignment Report #{{assignment.id}}</h2>
+			<h3 class="center">{{assignment.title}}</h3>
+			<hr class="no-print" />
+			<div class="row no-print">
+				<div class="col col-sm-4"></div>
+				<div class="col col-sm-4 center">
+					<a href="#" class="btn btn-sm btn-default" onclick="window.print();">Print</a>
+					<!--<a href="#" class="btn btn-sm btn-info" onclick="printPDF('report{{assignment.id}}.pdf');">Save as PDF</a>-->
+				</div>
+				<div class="col col-sm-4"></div>
+			</div>
+			<hr class="no-print" />
+			<table class="table">
+				<tr>
+					<th>Name</th>
+					<th>Roll No</th>
+					<th class="right">Passed</th>
+					<th class="right">Failed</th>
+					<th class="right">Percent</th>
+					<th class="right no-print">Action</th>
+				</tr>
+				{% for submission in submissions %}
+				<tr>
+					<td>{{ submission.student.user.first_name }} {{ submission.student.user.last_name }}</td>
+					<td>{{ submission.student.get_roll_number }}</td>
+					<td class="right">{{ submission.passed }}</td>
+					<td class="right">{{ submission.failed }}</td>
+					<td class="right">{{ submission.percent }}%</td>
+					<td class="right no-print">
+					<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="	btn btn-info btn-sm">VIEW</a>
+					<a target="_blank" href="/admin/AutoGrade/submission/{{ submission.id }}/change/" class="btn btn-primary btn-sm">EDIT</a>
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+		{% else %}
+			<p>Invalid Assignment</p>
+		{% endif %}
+
+	</div>
+	<div class="row">
+		<div class="col col-sm-4"></div>
+		<div class="col col-sm-4 center"><b>Generated on: </b>{{ generated_on }}</div>
+		<div class="col col-sm-4"></div>
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	$('#codeModal').on('show.bs.modal', function (e) {
+		var loadurl = $(e.relatedTarget).data('load-url');
+		$(this).find('.modal-log-content').html("").load(loadurl);
+	});
+});
+</script>
+<div id="codeModal" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-lg">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Assignment File</h4>
+			</div>
+			<div class="modal-body">
+				<pre class="modal-log-content">
+				</pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+			</div>
+
+		</div>
+	</div>
+
+
+</body>
+</html>
