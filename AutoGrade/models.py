@@ -83,13 +83,13 @@ class Assignment(models.Model):
     class Meta():
         unique_together = ('course', 'title',)
 
-    def get_student_latest_submissions(self, assignment):
+    def get_student_latest_submissions(self):
         # TODO: Try to acheive this by sub queries using Django ORM
         # Get students of this course
         students = Student.objects.filter(courses=self.course)
         submissions = []
         for student in students:
-            submission = Submission.objects.filter(student=student, assignment=assignment).order_by("-publish_date").first()
+            submission = Submission.objects.filter(student=student, assignment=self).order_by("-publish_date").first()
             submissions.append([submission, student])
             
         return submissions

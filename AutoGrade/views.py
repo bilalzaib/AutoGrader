@@ -331,7 +331,7 @@ def change_password(request):
 @staff_member_required
 def assignment_report(request, assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
-    submissions = assignment.get_student_latest_submissions(assignment)
+    submissions = assignment.get_student_latest_submissions()
     return render(request, 'admin/assignment_report.html', {
         'submissions': submissions,
         'assignment': assignment,
