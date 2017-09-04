@@ -43,7 +43,7 @@ class SubmissionInline(admin.TabularInline):
     model = Submission
     fieldsets = (
         (None, {
-            'fields': ('student','passed', 'failed', 'percent', 'publish_date')
+            'fields': ('student','passed', 'failed', 'publish_date')
         }),
     )
 

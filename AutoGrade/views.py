@@ -292,8 +292,7 @@ def api(request, action):
                     
                     submission.passed  = score[0]
                     submission.failed  = score[1]
-                    submission.percent = score[2]
-
+                    
                     submission.save()
 
                     response_data = {"status": 200, "type": "SUCCESS",

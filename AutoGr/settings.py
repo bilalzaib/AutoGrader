@@ -38,8 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bootstrap3',
-    'anymail'
+    'bootstrap3'
 ]
 
 MIDDLEWARE = [
@@ -201,9 +200,8 @@ LOGGING = {
     }
 }
 
-ANYMAIL = {
-    "MAILGUN_API_KEY": "key-df3d0d9d0634d5793a9898a92e5b243f",
-    "MAILGUN_SENDER_DOMAIN": 'https://api.mailgun.net/v3/sandbox83e7c796fa954e82806ef588b1588a43.mailgun.org',  # your Mailgun domain, if needed
-}
-EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"  
-DEFAULT_FROM_EMAIL = "p146011@nu.edu.pk"  # Limited by Mailgun
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'sendgrid_username'
+EMAIL_HOST_PASSWORD = 'sendgrid_password'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
