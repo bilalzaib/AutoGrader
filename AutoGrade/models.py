@@ -90,9 +90,8 @@ class Assignment(models.Model):
         submissions = []
         for student in students:
             submission = Submission.objects.filter(student=student, assignment=assignment).order_by("-publish_date").first()
-            if submission:
-                submissions.append(submission)
-
+            submissions.append([submission, student])
+            
         return submissions
 
     def __str__(self):

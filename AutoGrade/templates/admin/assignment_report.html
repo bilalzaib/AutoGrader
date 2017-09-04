@@ -70,18 +70,20 @@
 					</tr>
 				</thead>
 				<tbody>
-					{% for submission in submissions %}
+					{% for submission, student in submissions %}
 					<tr>
-						<td>{{ submission.student.user.first_name }} {{ submission.student.user.last_name }}</td>
-						<td>{{ submission.student.user.username }}</td>
-						<td>{{ submission.student.get_roll_number }}</td>
-						<td class="right">{{ submission.passed }}</td>
-						<td class="right">{{ submission.failed }}</td>
-						<td class="right">{{ submission.get_score }}</td>
-						<td class="right">{{ submission.publish_date }}</td>
+						<td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+						<td>{{ student.user.username }}</td>
+						<td>{{ student.get_roll_number }}</td>
+						<td class="right">{% firstof submission.passed "-" %}</td>
+						<td class="right">{% firstof submission.failed "-" %}</td>
+						<td class="right">{% firstof submission.get_score "-" %}</td>
+						<td class="right">{% firstof submission.publish_date "-" %}</td>
 						<td class="right no-print">
-						<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="	btn btn-info btn-sm">VIEW</a>
-						<a target="_blank" href="/admin/AutoGrade/submission/{{ submission.id }}/change/" class="btn btn-primary btn-sm">EDIT</a>
+							{% if submission.id %}
+								<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="btn btn-info btn-sm">VIEW</a>
+								<a target="_blank" href="/admin/AutoGrade/submission/{{ submission.id }}/change/" class="btn btn-primary btn-sm">EDIT</a>
+							{% endif %}
 						</td>
 					</tr>
 					{% endfor %}
