@@ -1,32 +1,42 @@
+{% load bootstrap3 %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Assignment Report #{{assignment.id}} - {{assignment.title}}</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  {% load bootstrap3 %}
-
-  {# Load CSS and JavaScript #}
-  {% bootstrap_css %}
-  <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
-  {% bootstrap_javascript %}
-  <style>
-  	@media print
+	<title>Assignment Report #{{assignment.id}} - {{assignment.title}}</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	
+	{# Load CSS and JavaScript #}
+	{% bootstrap_css %}
+	<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
+  	{% bootstrap_javascript %}
+	
+	<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+	
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+	
+	<style>
+	.hljs {
+		background: transparent;
+	}
+	@media print
 	{    
 	    .no-print, .no-print *
 	    {
 	        display: none !important;
 	    }
 	}
-  	.center {
-  		text-align: center;
-  	}
-  	.right {
-  		text-align: right;
-  	}
-
-  </style>
+	.center {
+		text-align: center;
+	}
+	.right {
+		text-align: right;
+	}
+	</style>
 </head>
 <body>
 
@@ -46,28 +56,36 @@
 				<div class="col col-sm-4"></div>
 			</div>
 			<hr class="no-print" />
-			<table class="table">
-				<tr>
-					<th>Name</th>
-					<th>Roll No</th>
-					<th class="right">Passed</th>
-					<th class="right">Failed</th>
-					<th class="right">Percent</th>
-					<th class="right no-print">Action</th>
-				</tr>
-				{% for submission in submissions %}
-				<tr>
-					<td>{{ submission.student.user.first_name }} {{ submission.student.user.last_name }}</td>
-					<td>{{ submission.student.get_roll_number }}</td>
-					<td class="right">{{ submission.passed }}</td>
-					<td class="right">{{ submission.failed }}</td>
-					<td class="right">{{ submission.percent }}%</td>
-					<td class="right no-print">
-					<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="	btn btn-info btn-sm">VIEW</a>
-					<a target="_blank" href="/admin/AutoGrade/submission/{{ submission.id }}/change/" class="btn btn-primary btn-sm">EDIT</a>
-					</td>
-				</tr>
-				{% endfor %}
+			<table data-toggle="table">
+				<thead>
+					<tr>
+						<th data-sortable="true">Name</th>
+						<th data-sortable="true">Username</th>
+						<th data-order="asc" data-sortable="true">Roll No</th>
+						<th data-sortable="true" class="right">Passed</th>
+						<th data-sortable="true" class="right">Failed</th>
+						<th data-sortable="true" class="right">Score ({{assignment.total_points }} Points)</th>
+						<th data-sortable="true" class="right">Submission Date</th>
+						<th class="right no-print">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for submission in submissions %}
+					<tr>
+						<td>{{ submission.student.user.first_name }} {{ submission.student.user.last_name }}</td>
+						<td>{{ submission.student.user.username }}</td>
+						<td>{{ submission.student.get_roll_number }}</td>
+						<td class="right">{{ submission.passed }}</td>
+						<td class="right">{{ submission.failed }}</td>
+						<td class="right">{{ submission.get_score }}</td>
+						<td class="right">{{ submission.publish_date }}</td>
+						<td class="right no-print">
+						<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="	btn btn-info btn-sm">VIEW</a>
+						<a target="_blank" href="/admin/AutoGrade/submission/{{ submission.id }}/change/" class="btn btn-primary btn-sm">EDIT</a>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
 			</table>
 		{% else %}
 			<p>Invalid Assignment</p>
@@ -76,7 +94,7 @@
 	</div>
 	<div class="row">
 		<div class="col col-sm-4"></div>
-		<div class="col col-sm-4 center"><b>Generated on: </b>{{ generated_on }}</div>
+		<div class="col col-sm-4 center"><br /><b>Generated on: </b>{{ generated_on }}</div>
 		<div class="col col-sm-4"></div>
 	</div>
 </div>
@@ -85,7 +103,11 @@
 $(document).ready(function(){
 	$('#codeModal').on('show.bs.modal', function (e) {
 		var loadurl = $(e.relatedTarget).data('load-url');
-		$(this).find('.modal-log-content').html("").load(loadurl);
+		$(this).find('.modal-assignment-content code').html("").load(loadurl, function() {
+			$('pre code').each(function(i, block) {
+				hljs.highlightBlock(block);
+			});
+		});
 	});
 });
 </script>
@@ -99,8 +121,8 @@ $(document).ready(function(){
 				<h4 class="modal-title">Assignment File</h4>
 			</div>
 			<div class="modal-body">
-				<pre class="modal-log-content">
-				</pre>
+				<pre class="modal-assignment-content"><code class="python">
+				</code></pre>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

@@ -66,7 +66,6 @@ def home(request):
             course = Course.objects.filter(enroll_key=secret_key).first()
             if course:
                 already_registered = Student.objects.filter(pk=student.id, courses__id=course.id).exists()
-                print (already_registered)
                 if already_registered:
                     messages.warning(request, 'You have already registered that course')
                 else:
@@ -255,65 +254,60 @@ def api(request, action):
     email = request.POST.get('email')
     submission_pass = request.POST.get('submission_pass')
 
-    user = User.objects.filter(email=email)
-    if (user.exists()):
-        student = Student.objects.filter(user=user[0], submission_pass=submission_pass)
-        if (student.exists()):
-            student = student[0]
-            if (action == "submit_assignment"):
+    student = Student.objects.filter(user__email=email, submission_pass=submission_pass)
+    if (student.exists()):
+        student = student[0]
+        if (action == "submit_assignment"):
 
-                if request.method == 'POST':
+            if request.method == 'POST':
 
-                    assignment = Assignment.objects.filter(id=request.POST.get('assignment'), open_date__lte=timezone.now()).first()
+                assignment = Assignment.objects.filter(id=request.POST.get('assignment'), open_date__lte=timezone.now()).first()
 
-                    if not assignment:
-                        response_data = {"status": 404, "type": "ERROR",
-                         "message": "Assignment doesn't exists"}
-                    elif assignment and timezone.now() > assignment.due_date:
-                        response_data = {"status": 400, "type": "ERROR",
-                         "message": "Assignment submission date expired"}
-                    else:
-                        submission = Submission(submission_file=request.FILES['submission_file'],
-                            assignment=assignment,
-                            student=student)
-                        submission.save()
-
-                        submission_file_url = submission.submission_file.url
-                        extract_directory = submission_file_url.replace(".zip","/")
-
-                        zip_file = zipfile.ZipFile(submission.submission_file.url, 'r')
-                        zip_file.extractall(extract_directory)
-                        zip_file.close()
-
-                        # Move Instructor Test File
-                        shutil.copy(assignment.instructor_test.url, extract_directory)
-
-                        # Move Student Test File
-                        shutil.copy(assignment.student_test.url, extract_directory)
-        
-                        score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                        
-                        submission.passed  = score[0]
-                        submission.failed  = score[1]
-                        submission.percent = score[2]
-
-                        submission.save()
-
-                        response_data = {"status": 200, "type": "SUCCESS",
-                             "message": score}
-
-                else:
+                if not assignment:
+                    response_data = {"status": 404, "type": "ERROR",
+                     "message": "Assignment doesn't exists"}
+                elif assignment and timezone.now() > assignment.due_date:
                     response_data = {"status": 400, "type": "ERROR",
-                             "message": "Use POST method"}
+                     "message": "Assignment submission date expired"}
+                else:
+                    submission = Submission(submission_file=request.FILES['submission_file'],
+                        assignment=assignment,
+                        student=student)
+                    submission.save()
+
+                    submission_file_url = submission.submission_file.url
+                    extract_directory = submission_file_url.replace(".zip","/")
+
+                    zip_file = zipfile.ZipFile(submission.submission_file.url, 'r')
+                    zip_file.extractall(extract_directory)
+                    zip_file.close()
+
+                    # Move Instructor Test File
+                    shutil.copy(assignment.instructor_test.url, extract_directory)
+
+                    # Move Student Test File
+                    shutil.copy(assignment.student_test.url, extract_directory)
+    
+                    score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                    
+                    submission.passed  = score[0]
+                    submission.failed  = score[1]
+                    submission.percent = score[2]
+
+                    submission.save()
+
+                    response_data = {"status": 200, "type": "SUCCESS",
+                         "message": score}
+
             else:
                 response_data = {"status": 400, "type": "ERROR",
-                             "message": "Invalid action"}
+                         "message": "Use POST method"}
         else:
             response_data = {"status": 400, "type": "ERROR",
-                             "message": "Invalid student"}
+                         "message": "Invalid action"}
     else:
-        response_data = {"status": 400,
-                         "type": "ERROR", "message": "Invalid user"}
+        response_data = {"status": 403, "type": "ERROR",
+                         "message": "Invalid student"}
 
     r = JsonResponse(response_data, safe=False)
     r.status_code = response_data['status']

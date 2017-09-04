@@ -67,8 +67,6 @@ class AssignmentFormAdmin(forms.ModelForm):
             instructor = Instructor.objects.filter(user=self.current_user).first()
             self.fields['course'].queryset = Course.objects.filter(instructor=instructor)
 
-    list_filter = ('course', )
-
     class Meta:
         fields = '__all__'
         model = Assignment

@@ -90,7 +90,8 @@ class Assignment(models.Model):
         submissions = []
         for student in students:
             submission = Submission.objects.filter(student=student).order_by("-publish_date").first()
-            submissions.append(submission)
+            if submission:
+                submissions.append(submission)
 
         return submissions
 
@@ -109,6 +110,13 @@ class Submission(models.Model):
     failed          = models.IntegerField(default=0)
     percent         = models.FloatField(default=0)
     publish_date    = models.DateTimeField('date published', default=datetime.now)
+
+    def get_score(self):
+        print (self.assignment.total_points)
+        total = self.passed + self.failed
+        if total == 0:
+            return 0
+        return float(self.passed) * self.assignment.total_points / total
 
     def get_modifiable_file(self):
         return self.submission_file.url.replace(".zip","")  + "/" + os.path.basename(self.assignment.assignment_file.url)
