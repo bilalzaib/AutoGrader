@@ -1,0 +1,4 @@
+Django==1.10.7
+requests==2.18.3
+pytest==2.9.2
+pytest_timeout==1.2.0
