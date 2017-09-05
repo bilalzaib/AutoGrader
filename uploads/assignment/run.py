@@ -232,14 +232,20 @@ class Submission():
             r = self.submit_assignment()
             result = r.json()
             score = result['message']
+            logging.info("="*80)
             logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " score: " + str(score[2]))
             logging.info("NOTE: You can see your submission on web interface also.")
+            logging.info("="*80)
         elif sys.argv[1] == "local":
             (result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
+            logging.info("="*80)
             logging.info("RESULT: " + " passed: " + str(result[0]) + " failed: " + str(result[1]))
+            logging.info("="*80)
             write_student_log(os.getcwd(), out)
         else:
+            logging.error("="*80)
             logging.error("ERROR: Invalid argument supplied")
+            logging.error("="*80)
 
 
 s = Submission()
