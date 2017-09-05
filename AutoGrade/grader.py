@@ -50,10 +50,11 @@ def run_test(out_file, target_folder, timeout):
     os.chdir(target_folder)
 
     with open(out_file, 'w') as f:
+        old_stdout = sys.stdout 
         sys.stdout = f
         import pytest
         pytest.main(['--timeout=' + str(timeout)])
-        sys.stdout = sys.__stdout__
+        sys.stdout = old_stdout  
 
     logger.debug("Restoring working directory ...")
     os.chdir(cur_directory)
