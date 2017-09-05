@@ -107,11 +107,9 @@ class Submission(models.Model):
     submission_file = models.FileField(upload_to=submission_directory_path, null=False)
     passed          = models.IntegerField(default=0)
     failed          = models.IntegerField(default=0)
-    percent         = models.FloatField(default=0)
     publish_date    = models.DateTimeField('date published', default=datetime.now)
 
     def get_score(self):
-        print (self.assignment.total_points)
         total = self.passed + self.failed
         if total == 0:
             return 0

@@ -109,7 +109,7 @@
 	 						<th>Submission Date</th>
 	 						<th>Passed</th>
 	 						<th>Failed</th>
-	 						<th>Percent</th>
+	 						<th>Score</th>
 	 						<th>Log</th>
 	 					</tr>
 	 					{% for submission in submission_history %}
@@ -118,7 +118,7 @@
 	 						<td>{{ submission.publish_date }}</td>
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
-	 						<td>{{ submission.percent }}</td>
+	 						<td>{{ submission.get_score }}/{{ submission.assignment.total_points }}</td>
 	 						<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=log_file&raw=1" class="btn btn-info btn-sm">VIEW</a></td>
 	 					</tr>
 	 					{% endfor %}

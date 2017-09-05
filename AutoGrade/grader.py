@@ -40,8 +40,7 @@ def get_score_from_result_line(res_line, total_points):
                 raise EnvironmentError("Failed to parse score line")
 
 
-    percent = ((float(passed) * total_points / (passed+failed)) / total_points) * 100
-    return (passed, failed, percent)
+    return (passed, failed)
 
 def run_test(out_file, target_folder, timeout):
     # chdir in main process create issue for django
@@ -75,7 +74,7 @@ def run_student_tests(target_folder, total_points, timeout):
     init_file = os.path.join(target_folder, "__init__.py")
     touch(init_file)
 
-    score = (0, 0, 0) # passed, failed, percent
+    score = (0, 0) # passed, failed
 
     logger.debug("Capturing stdout")
 
@@ -108,7 +107,7 @@ def run_student_tests(target_folder, total_points, timeout):
         # write back to the out file
         with open(out_file, 'w') as f:
             f.write(out)
-        score = (0, 0, 0) # error means you get a 0
+        score = (0, 0) # error means you get a 0
 
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
