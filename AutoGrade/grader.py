@@ -106,7 +106,7 @@ def run_student_tests(target_folder, total_points, timeout):
         # write back to the out file
         with open(out_file, 'w') as f:
             f.write(out)
-        score = (0, 0, 0) # error means you get a 0
+        score = (0, 0) # error means you get a 0
 
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))

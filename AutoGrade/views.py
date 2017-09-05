@@ -296,7 +296,7 @@ def api(request, action):
                     submission.save()
 
                     response_data = {"status": 200, "type": "SUCCESS",
-                         "message": score}
+                         "message": [score[0], score[1], submission.get_score()]}
 
             else:
                 response_data = {"status": 400, "type": "ERROR",

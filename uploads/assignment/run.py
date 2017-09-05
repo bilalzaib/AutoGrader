@@ -232,7 +232,7 @@ class Submission():
             r = self.submit_assignment()
             result = r.json()
             score = result['message']
-            logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]))
+            logging.info("RESPONSE: " + " passed: " + str(score[0]) + " failed: " + str(score[1]) + " score: " + str(score[2]))
             logging.info("NOTE: You can see your submission on web interface also.")
         elif sys.argv[1] == "local":
             (result, out) = run_student_tests(os.getcwd(), self.config['total_points'], self.config['timeout'])
