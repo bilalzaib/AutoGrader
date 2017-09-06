@@ -29,6 +29,8 @@ class CourseModelAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(instructor__user=request.user)
 
+    list_display = ('name', 'enroll_key', 'instructor')
+
 @admin.register(Student)
 class StudentModelAdmin(admin.ModelAdmin):
     #inlines = [UserInline,]
@@ -99,7 +101,7 @@ class AssignmentModelAdmin(admin.ModelAdmin):
 
     form = AssignmentFormAdmin
     inlines = [OtherFilesInline,]
-    list_display = ('title', 'assignment_file', 'due_date', 'open_date', 'assignment_report')
+    list_display = ('title', 'course', 'due_date', 'open_date', 'assignment_report')
     list_filter = ('course', )
     def get_form(self, request, *args, **kwargs):
          form = super(AssignmentModelAdmin, self).get_form(request, *args, **kwargs)
