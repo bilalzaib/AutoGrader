@@ -94,15 +94,12 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-
-            user.is_active = True
-
+            user.is_active = False
             user.save()
 
             student = Student.objects.create(user=user)
             student.save()
-
-            """
+            
             current_site = get_current_site(request)
             subject = 'Activate Your FAST AutoGrader Account'
             message = render_to_string('account/account_activation_email.html', {
@@ -111,15 +108,26 @@ def signup(request):
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
             })
-            user.email_user(subject, message)
-            return redirect('account_activation_sent')
-			"""
 
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=user.username, password=raw_password)
-            login(request, user)
-            request.session['username'] = user.username
-            return redirect('home')
+            try:
+                user.email_user(subject, message)
+                return redirect('account_activation_sent')
+            except Exception:
+                form.add_error(None, "Email sending failed, try again later.")
+                user.delete()
+
+            #user = form.save()
+            #user.refresh_from_db()
+            #user.save()
+
+            #student = Student.objects.create(user=user)
+            #student.save()
+
+            #raw_password = form.cleaned_data.get('password1')
+            #user = authenticate(username=user.username, password=raw_password)
+            #login(request, user)
+            #request.session['username'] = user.username
+            #return redirect('home')
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
