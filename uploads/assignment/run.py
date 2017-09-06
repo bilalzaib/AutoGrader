@@ -34,7 +34,7 @@ def touch(fname, times=None):
 
 def get_score_from_result_line(res_line, total_points):
     # case where we have failures and passes
-    match = re.match(r"=*\s(\d*)\sfailed,\s(\d*)\spassed,\s.*", res_line)
+    match = re.match(r"=*\s(\d*)\sfailed,\s(\d*)\spassed,?\s.*", res_line)
     passed = 0
     failed = 0
     if match:
