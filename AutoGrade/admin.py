@@ -41,6 +41,8 @@ class StudentModelAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(courses__instructor__user=request.user)
 
+    list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email') 
+
 class SubmissionInline(admin.TabularInline):
     model = Submission
     fieldsets = (

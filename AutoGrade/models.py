@@ -61,6 +61,22 @@ class Student(models.Model):
     def get_roll_number(self):
         return self.user.email.split("@")[0]
 
+    def student_username(self):
+        return self.user.username
+    student_username.short_description = 'Username'
+
+    def student_firstname(self):
+        return self.user.first_name
+    student_firstname.short_description = 'First Name'
+
+    def student_lastname(self):
+        return self.user.last_name
+    student_lastname.short_description = 'Last Name'
+
+    def student_email(self):
+        return self.user.email
+    student_email.short_description = 'Email'
+
 
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
