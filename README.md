@@ -4,23 +4,23 @@ A Python based AutoGrader for Python Assignments.
 
 ## Introduction
 
-This system is developed for [FAST-NUCES Peshawar Campus](http://pwr.nu.edu.pk) for the handling of the student assignments. This system provide auto grading functionality for the students submission and generated submission reports for the Instructor.
+This system is developed for [FAST-NUCES Peshawar Campus](http://pwr.nu.edu.pk) for the handling of student assignments. This system provide auto grading functionality for the students submission and generate submission reports for the instructor.
 
 ### Functionality
 
-1. Admin, Instructor and Student accounts.
+1. Admin, Instructor and Student accounts
 2. Course with unique enroll key
-3. Assignments with test and assignment file.
+3. Assignments with test and assignment file
 4. Assignment Submission Report (based on the latest submission)
 5. Student Account: Password Recovery, Submission Password, Submission Score and Submission Log
 
 ### Prerequisites
 
-Check [requirement.txt](requirement.txt) for the prerequisites packages. You can install requirment package using following command:
+Check [requirements.txt](requirements.txt) for the prerequisites packages. You can install requirment package using following command:
  
 ```
 cd AutoGrader/
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ### Installing
@@ -49,12 +49,12 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Now go to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) to login into the system.
+Now go to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) to logon to the system.
 
 ## Getting into system?
-1. After the installation admin user will logon to the system.
-2. It will create the Instructor, set him as "is_staff" and assign the permissions for example Assignment (All), Course (View only), Student (All) and Submission (All).
-3. After the creation of Instructor, instructor will logon to his account.
+1. After the installation admin user can logon to the system.
+2. Admin can create the Instructor, set him as "is_staff" and assign the permissions for example Assignment (All), Course (View only), Student (All) and Submission (All).
+3. After the creation of instructor, instructor will logon to his account.
 4. Instructor will create Assignment and share enroll key with students.
 5. Student will register to the system from [http://127.0.0.1:8000/autograder](http://127.0.0.1:8000/autograder)
 6. Student will logon to the system and enter the enroll key to enroll into the course.
@@ -99,4 +99,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Note
 
-There are not sandboxing mechanism in the system, however auto backups and system permission are used for now.
+There are no sandboxing mechanism in this system, however auto backups and system permission are used for now.
