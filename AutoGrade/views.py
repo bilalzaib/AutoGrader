@@ -230,8 +230,6 @@ def course(request, course_id, assignment_id=0):
         due_date = selected_assignment.due_date
         now_time = timezone.now()
 
-
-
         if due_date > now_time:
             rd = dateutil.relativedelta.relativedelta (due_date, now_time)
             time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
@@ -344,3 +342,21 @@ def assignment_report(request, assignment_id):
         'generated_on': timezone.now()
     })
 
+@staff_member_required
+def moss_submit(request, assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    assignment.moss_submit() # This will enable the view button if report is generated
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@staff_member_required
+def moss_view(request, assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    file_path = os.path.join(settings.MEDIA_ROOT, assignment.moss_report())
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:    
+            content_type = 'text/html'
+            response = HttpResponse(fh.read(), content_type=content_type)
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+
+    raise Http404
