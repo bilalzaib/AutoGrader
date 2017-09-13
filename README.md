@@ -96,6 +96,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * [autograder-basic](https://github.com/recluze/autograder-basic/) developed by [recluze](https://github.com/recluze) was used for grading purpose.
+* [moss.py](https://github.com/soachishti/moss.py) developed by [soachishti](https://github.com/soachishti) was used for Detecting Software Similarity.
 
 ## Note
 
