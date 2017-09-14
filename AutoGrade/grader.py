@@ -13,6 +13,10 @@ import tempfile
 logger = logging.getLogger(__name__)
 
 def touch(fname, times=None):
+    directory = os.path.dirname(fname)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
+
     with open(fname, 'a'):
         os.utime(fname, times)
 

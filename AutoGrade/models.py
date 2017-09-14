@@ -16,6 +16,10 @@ import time
 import zipfile
 import json
 import os
+from shutil import copyfile
+from moss import moss
+import logging
+from .grader import touch
 
 def other_files_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
@@ -110,6 +114,43 @@ class Assignment(models.Model):
             
         return submissions
 
+    def moss_report(self):
+        moss_report = 'uploads/moss_submission/assignment_' + str(self.id) + "/" + str(self.id) + ".html"
+        if os.path.exists(moss_report):
+            return moss_report
+        return False
+
+    def moss_submit(self):
+        moss_folder = 'uploads/moss_submission/assignment_{0}/'.format(self.id)
+
+        submissions = self.get_student_latest_submissions()
+
+        if not submissions:
+            logging.debug("MOSS: No submissions available for generating Moss report")
+            return False
+
+        for submission, student in submissions:
+            modifiable_file = submission.get_modifiable_file()
+            path = moss_folder + basename(modifiable_file).replace(".", "-" + submission.student.get_roll_number() + ".")
+            touch(path)
+            copyfile(modifiable_file, path)
+
+        m = moss.Moss(settings.MOSS_USERID, "python")
+        m.addBaseFile(self.assignment_file.url)
+        m.addFilesByWildcard(moss_folder + "*.py")
+
+        url = m.send()
+        if url:
+            logging.debug("MOSS: " + url)
+
+            path = moss_folder + str(self.id) + ".html"
+            touch(path)
+            m.saveWebPage(url, path)
+            return True
+        else:
+            logging.debug("MOSS: No url received.")
+            return False
+
     def __str__(self):
         return self.title
 
@@ -132,6 +173,7 @@ class Submission(models.Model):
         return float(self.passed) * self.assignment.total_points / total
 
     def get_modifiable_file(self):
+        # Return students modifiable file
         return self.submission_file.url.replace(".zip","")  + "/" + os.path.basename(self.assignment.assignment_file.url)
 
     def get_log_file(self):

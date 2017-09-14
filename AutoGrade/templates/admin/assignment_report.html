@@ -50,6 +50,10 @@
 			<div class="row no-print">
 				<div class="col col-sm-4"></div>
 				<div class="col col-sm-4 center">
+					<a href="{% url 'home' %}moss_submit/{{ assignment.id }}" class="btn btn-sm btn-primary">Generate Moss Report</a>
+					{% if assignment.moss_report != False %}
+					<a href="{% url 'home' %}moss_view/{{ assignment.id }}" target="_blank" class="btn btn-sm btn-info">View Moss Report</a>
+					{% endif %}
 					<a href="#" class="btn btn-sm btn-default" onclick="window.print();">Print</a>
 					<!--<a href="#" class="btn btn-sm btn-info" onclick="printPDF('report{{assignment.id}}.pdf');">Save as PDF</a>-->
 				</div>
