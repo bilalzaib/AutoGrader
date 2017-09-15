@@ -6,25 +6,25 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	
+
 	{# Load CSS and JavaScript #}
 	{% bootstrap_css %}
 	<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
   	{% bootstrap_javascript %}
-	
+
 	<link rel="stylesheet"
       href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
 	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-	
+
 	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
 	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
-	
+
 	<style>
 	.hljs {
 		background: transparent;
 	}
 	@media print
-	{    
+	{
 	    .no-print, .no-print *
 	    {
 	        display: none !important;
@@ -45,11 +45,12 @@
 	<div class="col col-sm-12">
 		{% if submissions %}
 			<h2 class="center">Assignment Report #{{assignment.id}}</h2>
-			<h3 class="center">{{assignment.title}}</h3>
+			<h3 class="center">{{assignment.title}} ({{assignment.course}})</h3>
 			<hr class="no-print" />
 			<div class="row no-print">
-				<div class="col col-sm-4"></div>
-				<div class="col col-sm-4 center">
+				<div class="col col-sm-12"></div>
+				<div class="col col-sm-12 center">
+                    <a href="{% url 'home' %}assignment_aggregate_report/{{ assignment.id }}" class="btn btn-sm btn-primary">View All Assignments</a>
 					<a href="{% url 'home' %}moss_submit/{{ assignment.id }}" class="btn btn-sm btn-primary">Generate Moss Report</a>
 					{% if assignment.moss_report != False %}
 					<a href="{% url 'home' %}moss_view/{{ assignment.id }}" target="_blank" class="btn btn-sm btn-info">View Moss Report</a>
@@ -57,7 +58,7 @@
 					<a href="#" class="btn btn-sm btn-default" onclick="window.print();">Print</a>
 					<!--<a href="#" class="btn btn-sm btn-info" onclick="printPDF('report{{assignment.id}}.pdf');">Save as PDF</a>-->
 				</div>
-				<div class="col col-sm-4"></div>
+
 			</div>
 			<hr class="no-print" />
 			<table data-toggle="table">
