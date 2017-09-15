@@ -123,17 +123,20 @@ class Assignment(models.Model):
     def moss_submit(self):
         moss_folder = 'uploads/moss_submission/assignment_{0}/'.format(self.id)
 
-        submissions = self.get_student_latest_submissions()
+        submissions = self.get_student_latest_submissions() # include all students of the assignment's course annd submission can be empty
 
-        if not submissions:
-            logging.debug("MOSS: No submissions available for generating Moss report")
-            return False
-
+        submission_count = 0
         for submission, student in submissions:
-            modifiable_file = submission.get_modifiable_file()
-            path = moss_folder + basename(modifiable_file).replace(".", "-" + submission.student.get_roll_number() + ".")
-            touch(path)
-            copyfile(modifiable_file, path)
+            if submission == None:
+                modifiable_file = submission.get_modifiable_file()
+                path = moss_folder + basename(modifiable_file).replace(".", "-" + submission.student.get_roll_number() + ".")
+                touch(path)
+                copyfile(modifiable_file, path)
+                submission_count += 1
+
+        if submission_count == 0:
+            logging.debug("MOSS: No submissions available for generating Moss report")
+            return False         
 
         m = moss.Moss(settings.MOSS_USERID, "python")
         m.addBaseFile(self.assignment_file.url)
