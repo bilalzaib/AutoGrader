@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'AutoGr.urls'
@@ -126,10 +127,6 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = 'home'
 
 RUN_API_URL = "http://127.0.0.1:8000/autograde/api/"
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
-
 
 # LOGGING CONFIGURATION 
 LOGGING = {
@@ -210,3 +207,5 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = ''
 
 MOSS_USERID = 123456789
+
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
