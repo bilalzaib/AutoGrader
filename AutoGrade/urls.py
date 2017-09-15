@@ -14,11 +14,12 @@ urlpatterns = [
     url(r'^change_email/$', views.change_email, name='change_email'),
     
     url(r'^api/(?P<action>[0-9a-zA-Z_]+)$', views.api, name='api'),
-    
+
     url(r'^assignment_report/(?P<assignment_id>[0-9a-zA-Z_]+)$', views.assignment_report, name='assignment_report'),
+    url(r'^assignment_aggregate_report/(?P<assignment_id>[0-9a-zA-Z_]+)$', views.assignment_aggregate_report, name='assignment_aggregate_report'),
     url(r'^moss_submit/(?P<assignment_id>[0-9a-zA-Z_]+)$', views.moss_submit, name='moss_submit'),
     url(r'^moss_view/(?P<assignment_id>[0-9a-zA-Z_]+)$', views.moss_view, name='moss_view'),
-    
+
     url(r'^course/(?P<course_id>[0-9]+)$', views.course, name='course'),
     url(r'^course/(?P<course_id>[0-9]+)/(?P<assignment_id>[0-9]+)$', views.course, name='course'),
     url(r'^download/$', views.download),

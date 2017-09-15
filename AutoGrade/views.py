@@ -428,5 +428,3 @@ def assignment_aggregate_report(request, assignment_id):
         'assignment': assignment,
         'generated_on': timezone.now()
     })
-
-from django.contrib.auth.forms import AuthenticationForm
