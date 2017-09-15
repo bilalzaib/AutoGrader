@@ -1,0 +1,99 @@
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Assignment Report #{{assignment.id}} - {{assignment.title}}</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+	{# Load CSS and JavaScript #}
+	{% bootstrap_css %}
+	<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
+  	{% bootstrap_javascript %}
+
+	<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+
+	<style>
+	.hljs {
+		background: transparent;
+	}
+	@media print
+	{
+	    .no-print, .no-print *
+	    {
+	        display: none !important;
+	    }
+	}
+	.center {
+		text-align: center;
+	}
+	.right {
+		text-align: right;
+	}
+	</style>
+</head>
+<body>
+
+<div class="container">
+<div class="row">
+	<div class="col col-sm-12">
+		{% if submissions %}
+			<h2 class="center">Assignment Report #{{assignment.id}}</h2>
+			<h3 class="center">{{assignment.title}} ({{assignment.course}})</h3>
+			<hr class="no-print" />
+			<div>
+            {% for submission, student in submissions %}
+                {{ student.user.first_name }} {{ student.user.last_name }}  ({{ student.user.email }}) Score: {% firstof submission.passed "-" %} / {% firstof submission.failed "-" %} ({% firstof submission.get_score "-" %})<br />
+                <pre class="modal-assignment-content"><code>{{ submission.file_content }}</code></pre>
+            {% endfor %}
+            </div>
+
+		{% else %}
+			<p>Invalid Assignment</p>
+		{% endif %}
+
+	</div>
+	<div class="row">
+		<div class="col col-sm-4"></div>
+		<div class="col col-sm-4 center"><br /><b>Generated on: </b>{{ generated_on }}</div>
+		<div class="col col-sm-4"></div>
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+    $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+    });
+});
+</script>
+<div id="codeModal" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-lg">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Assignment File</h4>
+			</div>
+			<div class="modal-body">
+				<pre class="modal-assignment-content"><code class="python">
+				</code></pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+			</div>
+
+		</div>
+	</div>
+
+
+</body>
+</html>

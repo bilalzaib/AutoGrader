@@ -99,7 +99,7 @@ def signup(request):
 
             student = Student.objects.create(user=user)
             student.save()
-            
+
             current_site = get_current_site(request)
             subject = 'Activate Your FAST AutoGrader Account'
             message = render_to_string('account/account_activation_email.html', {
@@ -292,12 +292,12 @@ def api(request, action):
 
                     # Move Student Test File
                     shutil.copy(assignment.student_test.url, extract_directory)
-    
+
                     score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
-                    
+
                     submission.passed  = score[0]
                     submission.failed  = score[1]
-                    
+
                     submission.save()
 
                     response_data = {"status": 200, "type": "SUCCESS",
@@ -353,10 +353,31 @@ def moss_view(request, assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
     file_path = os.path.join(settings.MEDIA_ROOT, assignment.moss_report())
     if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:    
+        with open(file_path, 'rb') as fh:
             content_type = 'text/html'
             response = HttpResponse(fh.read(), content_type=content_type)
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
 
     raise Http404
+
+
+@staff_member_required
+def assignment_aggregate_report(request, assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    submissions = assignment.get_student_latest_submissions()
+
+    all_submissions = {}
+    for submission, student in submissions:
+        if submission:
+            file_path = submission.get_modifiable_file()
+            file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            with open(file_path, 'rb') as fh:
+                submission_content = fh.read()
+                submission.file_content = submission_content
+
+    return render(request, 'admin/assignment_aggregate_report.html', {
+        'submissions': submissions,
+        'assignment': assignment,
+        'generated_on': timezone.now()
+    })
