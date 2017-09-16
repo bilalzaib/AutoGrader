@@ -61,9 +61,10 @@
 
 			</div>
 			<hr class="no-print" />
-			<table data-toggle="table">
+			<table data-toggle="table" class="table table-striped">
 				<thead>
 					<tr>
+                        <th>No.</th>
 						<th data-sortable="true">Name</th>
 						<th data-sortable="true">Username</th>
 						<th data-order="asc" data-sortable="true">Roll No</th>
@@ -77,6 +78,7 @@
 				<tbody>
 					{% for submission, student in submissions %}
 					<tr>
+                        <td>{{ forloop.counter }}</td>
 						<td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
 						<td>{{ student.user.username }}</td>
 						<td>{{ student.get_roll_number }}</td>
