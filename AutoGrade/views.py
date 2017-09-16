@@ -24,7 +24,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 from .models import Student, Course, Assignment, Submission
-from .forms import SignUpForm, EnrollForm
+from .forms import SignUpForm, EnrollForm, ChangeEmailForm
 from django.contrib import messages
 from .grader import run_student_tests
 
@@ -74,7 +74,7 @@ def home(request):
                     messages.success(request, 'You are successfully registered to the course')
 
             else:
-                form.add_error('secret_key', "Invalid Secret Key")
+                messages.error(request, 'Invalid Enroll Key')
             return redirect('home')
 
     errors = form.errors or None
@@ -109,25 +109,23 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
 
+            user.email_user(subject, message)    
+            
+            """
             try:
                 user.email_user(subject, message)
                 return redirect('account_activation_sent')
             except Exception:
                 form.add_error(None, "Email sending failed, try again later.")
                 user.delete()
+            """
 
-            #user = form.save()
-            #user.refresh_from_db()
-            #user.save()
-
-            #student = Student.objects.create(user=user)
-            #student.save()
-
-            #raw_password = form.cleaned_data.get('password1')
-            #user = authenticate(username=user.username, password=raw_password)
-            #login(request, user)
-            #request.session['username'] = user.username
-            #return redirect('home')
+            
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            request.session['username'] = user.username
+            return redirect('home')
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
@@ -260,9 +258,12 @@ def api(request, action):
     submission_pass = request.POST.get('submission_pass')
 
     student = Student.objects.filter(user__email=email, submission_pass=submission_pass)
-    if (student.exists()):
+    if student.exists():
         student = student[0]
-        if (action == "submit_assignment"):
+        if student.user.is_active == False:
+            response_data = {"status": 400, "type": "ERROR",
+                         "message": "Verify your email first."}
+        elif (action == "submit_assignment"):
 
             if request.method == 'POST':
 
@@ -331,6 +332,52 @@ def change_password(request):
     return render(request, 'account/change_password.html', {
         'form': form
     })
+
+@login_required
+def resend_signup_email(request):
+    user = request.user
+    
+    current_site = get_current_site(request)
+    subject = 'Activate Your FAST AutoGrader Account'
+    message = render_to_string('account/account_activation_email.html', {
+        'user': user,
+        'domain': current_site.domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+    })
+
+    user.email_user(subject, message)    
+    messages.success(request, 'Verification email sent, check your email account.')
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@login_required
+def change_email(request):
+    email = request.POST.get("email")
+
+    form = ChangeEmailForm(request.POST)
+    if form.is_valid():
+        user = request.user
+        user.email = form.cleaned_data.get('email')
+        user.save()
+
+        current_site = get_current_site(request)
+        subject = 'Activate Your FAST AutoGrader Account'
+        message = render_to_string('account/account_activation_email.html', {
+            'user': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_activation_token.make_token(user),
+        })
+
+        user.email_user(subject, message)    
+        messages.success(request, 'Email updated and verification email sent.')
+    else:
+        for field in form:
+            for error in field.errors:
+                messages.warning(request, field.label + ": " + error)
+        
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @staff_member_required
 def assignment_report(request, assignment_id):

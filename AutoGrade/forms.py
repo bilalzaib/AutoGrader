@@ -24,3 +24,16 @@ class EnrollForm(forms.Form):
 
     class Meta:
         fields = ('secret_key')
+
+class ChangeEmailForm(forms.Form):
+    email = forms.EmailField()
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email=email).exists():
+            raise forms.ValidationError(u'That email is already used.')
+        return email
+
+    class Meta:
+        fields = ('email')
+
