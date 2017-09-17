@@ -127,7 +127,7 @@ class Assignment(models.Model):
 
         submission_count = 0
         for submission, student in submissions:
-            if submission == None:
+            if submission != None:
                 modifiable_file = submission.get_modifiable_file()
                 path = moss_folder + basename(modifiable_file).replace(".", "-" + submission.student.get_roll_number() + ".")
                 touch(path)
