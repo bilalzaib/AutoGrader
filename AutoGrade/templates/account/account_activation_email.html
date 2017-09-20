@@ -3,10 +3,13 @@ Hi {{ user.username }},
 
 Please click on the link below to confirm your registration:
 
-<a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">http://{{ domain }}{% url 'activate' uidb64=uid token=token %}</a>
-
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% endautoescape %}
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
+
+Username: {{ user.username }}
+Email: {{ user.email }}
 
 Regards,
 AutoGrader Team
