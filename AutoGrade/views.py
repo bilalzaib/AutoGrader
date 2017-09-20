@@ -267,7 +267,7 @@ def api(request, action):
 
             if request.method == 'POST':
 
-                assignment = Assignment.objects.filter(id=request.POST.get('assignment'), open_date__lte=timezone.now()).first()
+                assignment = Assignment.objects.filter(id=request.POST.get('assignment'), course__in=student.courses.all(), open_date__lte=timezone.now()).distinct().first()
 
                 if not assignment:
                     response_data = {"status": 404, "type": "ERROR",
