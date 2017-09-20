@@ -382,7 +382,7 @@ def change_email(request):
 @staff_member_required
 def assignment_report(request, assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
-    submissions = assignment.get_student_latest_submissions()
+    submissions = assignment.get_student_and_latest_submissions()
     return render(request, 'admin/assignment_report.html', {
         'submissions': submissions,
         'assignment': assignment,
@@ -412,7 +412,7 @@ def moss_view(request, assignment_id):
 @staff_member_required
 def assignment_aggregate_report(request, assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
-    submissions = assignment.get_student_latest_submissions()
+    submissions = assignment.get_student_and_latest_submissions()
 
     all_submissions = {}
     for submission, student in submissions:

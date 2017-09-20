@@ -58,7 +58,7 @@ class Course(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # name, email, password
-    email_confirmed = models.BooleanField(default=False)
+    email_confirmed = models.BooleanField(default=False) # TODO: us this instead of is_active
     submission_pass = models.CharField(max_length=12, default=submission_key)
     courses = models.ManyToManyField(Course)
 
@@ -106,7 +106,7 @@ class Assignment(models.Model):
     class Meta():
         unique_together = ('course', 'title',)
 
-    def get_student_latest_submissions(self):
+    def get_student_and_latest_submissions(self):
         # TODO: Try to acheive this by sub queries using Django ORM
         # Get students of this course
         students = Student.objects.filter(courses=self.course)
@@ -126,7 +126,7 @@ class Assignment(models.Model):
     def moss_submit(self):
         moss_folder = 'uploads/moss_submission/assignment_{0}/'.format(self.id)
 
-        submissions = self.get_student_latest_submissions() # include all students of the assignment's course annd submission can be empty
+        submissions = self.get_student_and_latest_submissions() # include all students of the assignment's course annd submission can be empty
 
         submission_count = 0
         for submission, student in submissions:
