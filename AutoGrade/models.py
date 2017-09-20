@@ -9,7 +9,7 @@ from django.conf import settings
 from .storage import OverwriteStorage
 
 from os.path import basename
-from datetime import datetime    
+from datetime import datetime
 import string
 import random
 import time
@@ -46,7 +46,7 @@ class Instructor(models.Model):
 
     def __str__(self):
         return self.user.username
-    
+
 class Course(models.Model):
     instructor = models.ForeignKey(Instructor, null=False, default=None)
     name = models.CharField(max_length=64)
@@ -59,7 +59,7 @@ class Course(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # name, email, password
     email_confirmed = models.BooleanField(default=False)
-    submission_pass = models.CharField(max_length=12, default=submission_key) 
+    submission_pass = models.CharField(max_length=12, default=submission_key)
     courses = models.ManyToManyField(Course)
 
     def get_roll_number(self):
@@ -81,13 +81,16 @@ class Student(models.Model):
         return self.user.email
     student_email.short_description = 'Email'
 
+    def __str__(self):
+        return self.user.first_name + " " + self.user.last_name + " (" + self.user.email + ")"
+
 
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
-    
+
     title           = models.CharField(max_length=64, null=False, default=None)
     description     = models.TextField(max_length=8192, null=True, default=None)
-    
+
     # Files
     instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
@@ -111,7 +114,7 @@ class Assignment(models.Model):
         for student in students:
             submission = Submission.objects.filter(student=student, assignment=self).order_by("-publish_date").first()
             submissions.append([submission, student])
-            
+
         return submissions
 
     def moss_report(self):
@@ -136,7 +139,7 @@ class Assignment(models.Model):
 
         if submission_count == 0:
             logging.debug("MOSS: No submissions available for generating Moss report")
-            return False         
+            return False
 
         m = moss.Moss(settings.MOSS_USERID, "python")
         m.addBaseFile(self.assignment_file.url)
@@ -183,20 +186,20 @@ class Submission(models.Model):
         return self.submission_file.url.replace(".zip","")  + "/test-results.log"
 
     def __str__(self):
-        return self.assignment.title + " (submission_id: " + str(self.id) + ")"
+        return self.assignment.title + " (" + self.student.user.email + " - id: " + str(self.id) + ")"
 
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
 def create_assignment_zip_file(sender, instance, created, **kwargs):
     assignment_directory = assignment_directory_path(instance, "")
-    
+
     # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
     zip_full_path = assignment_directory + "assignment" + str(instance.id) + ".zip"
 
     # Creating student zip file
     zip_file = zipfile.ZipFile(zip_full_path, 'w', zipfile.ZIP_DEFLATED)
-    
+
     assignment_id = int(instance.id);
 
     student_config = {
@@ -215,7 +218,7 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     files.append(instance.student_test.url)
     files.append(instance.assignment_file.url)
     files.append(student_config_file)
-    
+
     other_files =  OtherFile.objects.filter(assignment=instance)
     for other_file in other_files:
         files.append(other_file.file.url)
@@ -223,7 +226,7 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
     with open("uploads/assignment/run.py","r") as file:
         content = file.read()
         content = content.replace("##RUN_API_URL##", settings.RUN_API_URL)
-        zip_file.writestr("run.py", content)      
+        zip_file.writestr("run.py", content)
 
     for file in files:
         zip_file.write(file, os.path.basename(file))
@@ -234,7 +237,7 @@ def create_assignment_zip_file(sender, instance, created, **kwargs):
 @receiver(post_save, sender=OtherFile)
 def create_assignment_zip_file_other_file(sender, instance, created, **kwargs):
     assignment_directory = assignment_directory_path(instance.assignment, "")
-    
+
     # save in assignment folder as "assignment[ID].zip" eg. "assignment2.zip"
     zip_full_path = assignment_directory + "assignment" + str(instance.assignment.id) + ".zip"
 
