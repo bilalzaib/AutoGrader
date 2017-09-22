@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bootstrap3'
+    'bootstrap3',
+    'dbbackup',  # django-dbbackup
 ]
 
 MIDDLEWARE = [
@@ -209,3 +210,13 @@ DEFAULT_FROM_EMAIL = ''
 MOSS_USERID = 123456789
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': 'c:/ag-backups'}
+
+# pip install dropbox django-storages
+# More: https://django-dbbackup.readthedocs.io/en/stable/storage.html
+#DBBACKUP_STORAGE = 'storages.backends.dropbox.DropBoxStorage'
+#DBBACKUP_STORAGE_OPTIONS = {
+#    'oauth2_access_token': 'my_token',
+#}
