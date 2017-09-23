@@ -8,6 +8,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.core.urlresolvers import reverse
 
+
+admin.site.register(Request_Extension)
 class UserInline(admin.StackedInline):
     model = User
 

@@ -81,8 +81,9 @@ class Student(models.Model):
         return self.user.email
     student_email.short_description = 'Email'
 
-    def __str__(self):
+    """def __str__(self):
         return self.user.first_name + " " + self.user.last_name + " (" + self.user.email + ")"
+    """
 
 
 class Assignment(models.Model):
@@ -102,6 +103,8 @@ class Assignment(models.Model):
     open_date = models.DateTimeField('open date', default=datetime.now)
     due_date = models.DateTimeField('due date', default=datetime.now)
     publish_date = models.DateTimeField('date published', default=datetime.now)
+
+    #allowed_late_days = models.IntegerField(default=3)
 
     class Meta():
         unique_together = ('course', 'title',)
@@ -171,12 +174,13 @@ class Submission(models.Model):
     passed          = models.IntegerField(default=0)
     failed          = models.IntegerField(default=0)
     publish_date    = models.DateTimeField('date published', default=datetime.now)
+    late_sub       = models.BooleanField(default=False)
 
-    def get_score(self):
+    def get_score(self, late_days):
         total = self.passed + self.failed
         if total == 0:
             return 0
-        return float(self.passed) * self.assignment.total_points / total
+        return (float(self.passed) * self.assignment.total_points / total)- late_days*5
 
     def get_modifiable_file(self):
         # Return students modifiable file
@@ -188,6 +192,14 @@ class Submission(models.Model):
     def __str__(self):
         return self.assignment.title + " (" + self.student.user.email + " - id: " + str(self.id) + ")"
 
+
+class Request_Extension(models.Model):
+    assignment = models.ForeignKey(Assignment)
+    student = models.ForeignKey(Student)
+    due_date = models.DateTimeField('due date', default=datetime.now)
+    late_days = models.IntegerField(default=0)
+    def __str__(self):
+        return self.assignment.title + " (" +self.student.user.username + ")"
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)

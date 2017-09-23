@@ -42,7 +42,18 @@
 
                 <div class="row">
                     <div class="col col-sm-12">
-                        <div class='alert alert-{%if assignment_expired %}danger{% else %}success{% endif %}'>{{time_left}}</div>
+						{%if assignment_expired %}
+							
+							<div class='alert alert-danger' style="text-align: right">
+								<p style="text-align:left">Submission date has passed!</p>
+								<a href="{% url 'home' %}extension_request/?aid={{ selected_assignment.id }}" class="btn btn-warning">Due Date Extension</a>
+							</div>
+						{% else %}
+							<div class='alert alert-success'>{{time_left}}
+								<div style="text-align: right"><a href="{% url 'home' %}extension_request/?aid={{ selected_assignment.id }}" class="btn btn-warning" disabled>Due Date Extension</a></div>
+							</div>
+						{% endif %}
+							<!--<div class='alert alert-{%if assignment_expired %}danger{% else %}success{% endif %}'>{{time_left}}</div>-->
                     </div>
                 </div>
 
