@@ -2,10 +2,10 @@
 
 if [ $# -eq 1 ]
 then
-	cd $1 ;
-	cd AutoGrader ;
-	python manage.py dbbackup ; 
-	python manage.py mediabackup ;
+	cd $1 
+	cd AutoGrader 
+	python manage.py dbbackup  
+	python manage.py mediabackup 
 elif [ $# -eq 2 ]
 then
   	cd $1
