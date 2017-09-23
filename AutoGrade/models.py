@@ -17,7 +17,7 @@ import zipfile
 import json
 import os
 from shutil import copyfile
-from moss import moss
+import mosspy
 import logging
 from .grader import touch
 
@@ -141,7 +141,7 @@ class Assignment(models.Model):
             logging.debug("MOSS: No submissions available for generating Moss report")
             return False
 
-        m = moss.Moss(settings.MOSS_USERID, "python")
+        m = mosspy.Moss(settings.MOSS_USERID, "python")
         m.addBaseFile(self.assignment_file.url)
         m.addFilesByWildcard(moss_folder + "*.py")
 
