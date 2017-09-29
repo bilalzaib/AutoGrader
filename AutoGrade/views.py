@@ -441,13 +441,11 @@ def loginas(request, student_id):
 
     request.session['staff_loginas'] = True
     request.session['staff_loginas_referer'] = request.META.get('HTTP_REFERER')
-    print (request.session['staff_loginas_referer'])
     request.session['staff_loginas_userid'] = staff_user_id
     
     return redirect('home')
 
 def logout_student(request):
-    print (request.session)
     if "staff_loginas" in request.session and request.session['staff_loginas']:
         staff_user_id = request.session['staff_loginas_userid']
         loginas_referer = request.session['staff_loginas_referer']
