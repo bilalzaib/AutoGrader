@@ -53,7 +53,8 @@ def home(request):
     user = request.user
     student = Student.objects.filter(user=user).first()
 
-    if user.is_staff or user.is_superuser:
+    # If user is student and also staff member then allow him the access to student panel.
+    if not student and (user.is_staff or user.is_superuser):
         return HttpResponseRedirect(reverse('admin:index'))
 
     form = EnrollForm()
