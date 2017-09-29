@@ -35,13 +35,19 @@ class CourseModelAdmin(admin.ModelAdmin):
 class StudentModelAdmin(admin.ModelAdmin):
     #inlines = [UserInline,]
 
+    def student_loginas(self, obj):
+        return '<a target="_blank" href="' + reverse("home") + 'loginas/' + str(obj.id) + '">Login as ' + obj.user.username + '</a>'
+
+    student_loginas.short_description = 'Login as Student'
+    student_loginas.allow_tags = True
+
     def get_queryset(self, request):
         qs = super(StudentModelAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(courses__instructor__user=request.user)
 
-    list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email') 
+    list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email', 'student_loginas') 
 
 class SubmissionInline(admin.TabularInline):
     model = Submission

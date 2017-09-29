@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
     
     url(r'^login/$', auth_views.login, {'authentication_form': CustomAuthentication, 'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', auth_views.logout, {'next_page': 'login'}, name='logout'),
+    url(r'^logout/$', views.logout_student, name='logout'),
     url(r'^signup/$', views.signup, name='signup'),
     
     url(r'^resend_signup_email/$', views.resend_signup_email, name='resend_signup_email'),
@@ -32,4 +32,6 @@ urlpatterns = [
     url(r'^account_activation_sent/$', views.account_activation_sent, name='account_activation_sent'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         views.activate, name='activate'),
+    url(r'^loginas/(?P<student_id>[0-9a-zA-Z_]+)$$', views.loginas, name='loginas'),
+
 ]
