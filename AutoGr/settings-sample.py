@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'AutoGrade.apps.AutogradeConfig',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -40,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bootstrap3',
     'dbbackup',  # django-dbbackup
+    'material',
+    'material.frontend',
+    'material.admin',
+    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
