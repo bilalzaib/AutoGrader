@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.contrib.auth.models import User
@@ -53,7 +53,8 @@ def home(request):
     user = request.user
     student = Student.objects.filter(user=user).first()
 
-    if user.is_staff or user.is_superuser:
+    # If user is student and also staff member then allow him the access to student panel.
+    if not student and (user.is_staff or user.is_superuser):
         return HttpResponseRedirect(reverse('admin:index'))
 
     form = EnrollForm()
@@ -408,7 +409,6 @@ def moss_view(request, assignment_id):
 
     raise Http404
 
-
 @staff_member_required
 def assignment_aggregate_report(request, assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
@@ -428,3 +428,29 @@ def assignment_aggregate_report(request, assignment_id):
         'assignment': assignment,
         'generated_on': timezone.now()
     })
+
+@staff_member_required
+def loginas(request, student_id):
+    # Save staff id so when student account logout so that staff is logged in
+    staff_user_id = request.user.id
+
+    student = Student.objects.get(id=student_id)
+    user = student.user
+    login(request, student.user)
+    request.session['username'] = user.username
+
+    request.session['staff_loginas'] = True
+    request.session['staff_loginas_referer'] = request.META.get('HTTP_REFERER')
+    request.session['staff_loginas_userid'] = staff_user_id
+    
+    return redirect('home')
+
+def logout_student(request):
+    if "staff_loginas" in request.session and request.session['staff_loginas']:
+        staff_user_id = request.session['staff_loginas_userid']
+        loginas_referer = request.session['staff_loginas_referer']
+        login(request, User.objects.get(id=staff_user_id))
+        return HttpResponseRedirect(loginas_referer)
+    else:
+        logout(request)
+        return redirect('login')
