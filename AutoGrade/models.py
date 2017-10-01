@@ -52,6 +52,7 @@ class Course(models.Model):
     name = models.CharField(max_length=64)
     enroll_key = models.CharField(max_length=8, default=enroll_key, unique=True) # Secret key to enroll
     course_id = models.CharField(max_length=64) # CS101
+    late_days = models.IntegerField(default = 3)
 
     def __str__(self):
         return self.name
@@ -187,6 +188,16 @@ class Submission(models.Model):
 
     def __str__(self):
         return self.assignment.title + " (" + self.student.user.email + " - id: " + str(self.id) + ")"
+
+class DueDate_Extension(models.Model):
+
+    assignment = models.ForeignKey(Assignment)
+    student = models.ForeignKey(Student)
+    course_id = models.IntegerField(default=0)
+    due_date = models.DateTimeField('due date', default=datetime.now)
+
+    def __str__(self):
+        return self.assignment.title + " (" + self.student.user.username + ")"
 
 
 # Create zip file of Assignment
