@@ -85,7 +85,7 @@
 						<td class="right">{% firstof submission.passed "-" %}</td>
 						<td class="right">{% firstof submission.failed "-" %}</td>
 						<td class="right">{% firstof submission.get_score "-" %}</td>
-						<td class="right">{% firstof submission.publish_date "-" %}</td>
+						<td class="right">{% firstof submission.publish_date|date:"Y-m-d H:i:s" "-" %}</td>
 						<td class="right no-print">
 							{% if submission.id %}
 								<a href="" data-toggle="modal" data-target="#codeModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="btn btn-info btn-sm">VIEW</a>

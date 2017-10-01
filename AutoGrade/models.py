@@ -200,6 +200,10 @@ class Submission(models.Model):
     def get_log_file(self):
         return self.submission_file.url.replace(".zip","")  + "/test-results.log"
 
+    def assignment_course(self):
+        return self.assignment.course
+    assignment_course.short_description = 'Course'
+
     def __str__(self):
         return self.assignment.title + " (" + self.student.user.email + " - id: " + str(self.id) + ")"
 

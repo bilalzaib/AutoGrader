@@ -83,6 +83,7 @@ class StudentModelAdmin(admin.ModelAdmin):
         return qs.filter(courses__instructor__user=request.user)
 
     list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email', 'student_loginas')
+    search_fields = ['user__email', 'user__first_name', 'user__last_name', 'user__username']
 
 class SubmissionInline(admin.TabularInline):
     model = Submission
@@ -164,7 +165,7 @@ class SubmissionModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(assignment__course__instructor__user=request.user)
-
+    list_display = ('assignment', 'assignment_course', 'student', 'publish_date', 'passed', 'failed')
 
 @admin.register(AssignmentExtension)
 class AssignmentExtensionModelAdmin(admin.ModelAdmin):
