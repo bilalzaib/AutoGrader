@@ -222,11 +222,14 @@ def course(request, course_id, assignment_id=0):
     modifiable_filename = None
     expired = False
 
+    late_days_left = student.get_late_days_left(course)
+
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
         due_date = selected_assignment.corrected_due_date(student)
+
         now_time = timezone.now()
 
         if due_date > now_time:
@@ -245,6 +248,7 @@ def course(request, course_id, assignment_id=0):
     return render(request, 'course.html', {
             'assignment_zip_file': assignment_zip_file,
             'corrected_due_date': due_date,
+            'late_days_left': late_days_left, 
             'assignment_id': int(assignment_id),
             'course': course,
             'assignments': assignments,

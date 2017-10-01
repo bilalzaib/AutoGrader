@@ -83,6 +83,15 @@ class Student(models.Model):
         return self.user.email
     student_email.short_description = 'Email'
 
+    def get_late_days_left(self, course):
+        aes = AssignmentExtension.objects.filter(student=self, assignment__course=course)
+        days_extended = aes.aggregate(Sum('days'))['days__sum']
+
+        if days_extended is None:
+            days_extended = 0
+        late_days_left = course.max_extension_days - days_extended
+        return late_days_left
+
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name + " (" + self.user.email + ")"
 
