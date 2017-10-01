@@ -29,7 +29,7 @@ from .models import Student, Course, Assignment, Submission, DueDate_Extension
 from .forms import SignUpForm, EnrollForm, ChangeEmailForm
 from django.contrib import messages
 from .grader import run_student_tests
-from .utils import count_remaining_late_days
+from .utils import count_remaining_late_days, late_assignment_days
 
 from multiprocessing import Process, Manager, Queue
 
@@ -217,6 +217,7 @@ def course(request, course_id, assignment_id=0):
     course = Course.objects.get(id=course_id)
 
     assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
+    remaining_late_days = count_remaining_late_days(student, course.id)
 
     selected_assignment = None
     submission_history = None
@@ -224,31 +225,24 @@ def course(request, course_id, assignment_id=0):
     time_left = ''
     modifiable_filename = None
     extension_request = None
-    remaining_late_days = 0
+    assignment_late_days = 0
+    due_date = None
     expired = True
 
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
-        due_date = selected_assignment.due_date
+        due_date = selected_assignment.get_correct_due_date(student)
         now_time = timezone.now()
-        remaining_late_days = count_remaining_late_days(selected_assignment, student, course.id)
+        assignment_late_days = late_assignment_days(selected_assignment, student, course.id)
 
         if due_date > now_time:
             rd = dateutil.relativedelta.relativedelta (due_date, now_time)
             time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
             expired = False
         else:
-            try:
-                extension_request = DueDate_Extension.objects.get(student=student, assignment=selected_assignment)
-            except (DueDate_Extension.DoesNotExist):
-                expire = True
-            if extension_request:
-                if extension_request.due_date > now_time:
-                    rd = dateutil.relativedelta.relativedelta(extension_request.due_date, now_time)
-                    time_left = "%d days, %d hours and %d minutes" % (rd.days, rd.hours, rd.minutes) + " left"
-                    expired = False
+            expired = True
 
         # only one assignment file for now
         modifiable_filename = os.path.basename(selected_assignment.assignment_file.url)
@@ -259,11 +253,13 @@ def course(request, course_id, assignment_id=0):
             'course': course,
             'assignments': assignments,
             'selected_assignment': selected_assignment,
+            'due_date': due_date,
             'submission_history': submission_history,
             'time_left' : time_left,
             'modifiable_filename': modifiable_filename,
             'assignment_expired': expired,
-            'late_days': remaining_late_days
+            'remaining_days': remaining_late_days,
+            "assignment_late_days": assignment_late_days
         }
     )
 
@@ -307,19 +303,15 @@ def api(request, action):
             if request.method == 'POST':
 
                 assignment = Assignment.objects.filter(id=request.POST.get('assignment'), course__in=student.courses.all(), open_date__lte=timezone.now()).distinct().first()
-                try:
-                    re = Request_Extension.objects.get(student=student, assignment=assignment)
-                except (Request_Extension.DoesNotExist):
-                    pass
 
                 if not assignment:
                     response_data = {"status": 404, "type": "ERROR",
                      "message": "Assignment doesn't exists"}
-                elif (assignment and timezone.now() > assignment.due_date) and (re and timezone.now()>re.due_date):
+                elif (assignment and timezone.now() > assignment.get_correct_due_date()):
                     response_data = {"status": 400, "type": "ERROR",
                      "message": "Assignment submission date expired"}
                 else:
-                    if (assignment and timezone.now() > assignment.due_date):
+                    if (assignment and assignment.due_date != assignment.get_correct_due_date()):
                         late_submission = True      #Insert warning in submission for late submission
 
                     submission = Submission(submission_file=request.FILES['submission_file'],

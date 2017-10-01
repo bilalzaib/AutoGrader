@@ -5,6 +5,11 @@
 {% block content %}
 	<div class="row">
 		<h2>Welcome, {{ course.name }} </h2>
+		<div class="col col-sm-9"<div class="col col-sm-9" style="text-align: right;">
+	 		<p>
+	 			<strong>Your Availiable Late Days for this Course :{{ remaining_days }}</strong>
+	 		</p>
+	 	</div>
 		<hr />
 	</div>
 	<div class="row">
@@ -29,7 +34,7 @@
 	 				<div class="col col-sm-6" style="text-align: right; padding-top: 5px;">
 	 					<p>
 	 						<small><b>Open Date: </b>{{ selected_assignment.open_date }}</small><br />
-	 						<small><b>Due Date: </b>{{ selected_assignment.due_date }}</small><br />
+	 						<small><b>Due Date: </b>{{ due_date }}</small><br />
 	 					</p>
 	 				</div>
 	 			</div>
@@ -45,16 +50,15 @@
 						{%if assignment_expired %}
 							
 							<div class='alert alert-danger' style="text-align: right">
-								<p style="text-align:left">Submission date has passed! You have {{late_days}} late days left</p>
-								{% if late_days != 0 %}
-								<a href="{% url 'home' %}extension_request/?aid={{ selected_assignment.id }}" class="btn btn-warning" active>Due Date Extension</a>
+								{% if assignment_late_days != 0 %}
+									<p style="text-align:left">If you click for extension You will lose {{assignment_late_days}} late days</p>
+									<a href="{% url 'home' %}extension_request/?aid={{ selected_assignment.id }}" class="btn btn-warning" active>Due Date Extension</a>
 								{% else %}
-								<a href="#" class="btn btn-warning" disabled>Due Date Extension</a>
+									<p style="text-align:left">Assignment Submission date has passed or You don't have enough late days</p>
 								{% endif%}
 							</div>
 						{% else %}
 							<div class='alert alert-success'>{{time_left}}
-								<div style="text-align: right"><a href="#" class="btn btn-warning" disabled>Due Date Extension</a></div>
 							</div>
 						{% endif %}
 							<!--<div class='alert alert-{%if assignment_expired %}danger{% else %}success{% endif %}'>{{time_left}}</div>-->

@@ -157,6 +157,13 @@ class Assignment(models.Model):
         else:
             logging.debug("MOSS: No url received.")
             return False
+    def get_correct_due_date(self, student):
+        count = DueDate_Extension.objects.filter(assignment = self, student = student).count()
+        if count != 0:
+            re = DueDate_Extension.objects.get(assignment=self, student = student)
+            due_date = re.due_date
+            return due_date
+        return self.due_date
 
     def __str__(self):
         return self.title

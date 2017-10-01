@@ -8,8 +8,6 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.core.urlresolvers import reverse
 
-admin.site.register(DueDate_Extension)
-
 class UserInline(admin.StackedInline):
     model = User
 
@@ -166,3 +164,14 @@ class SubmissionModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(assignment__course__instructor__user=request.user)
+
+@admin.register(DueDate_Extension)
+class DueDate_ExtensionModelAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super(DueDate_ExtensionModelAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(assignment__course__instructor__user=request.user)
+
+    # list_filter = ('assignment', )
+    list_display = ('assignment', 'student', 'course_id', 'due_date')
