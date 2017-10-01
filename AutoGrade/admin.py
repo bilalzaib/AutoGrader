@@ -27,7 +27,7 @@ class CourseStudentsInline(admin.TabularInline):
     model = Student.courses.through
     fields = ['student_name', 'student_email', 'student_username', 'student_roll_number']
     readonly_fields = ['student_name', 'student_email', 'student_username', 'student_roll_number']
-    extra = 0 
+    extra = 0
     classes = ['collapse']
 
     def has_add_permission(self, request):
@@ -55,7 +55,7 @@ class CourseModelAdmin(admin.ModelAdmin):
 
     # This will hide object name from tabular inline.
     class Media:
-        css = { "all" : ("css/hide_admin_original.css",) }    
+        css = { "all" : ("css/hide_admin_original.css",) }
 
     def get_queryset(self, request):
         qs = super(CourseModelAdmin, self).get_queryset(request)
@@ -82,7 +82,8 @@ class StudentModelAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(courses__instructor__user=request.user)
 
-    list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email', 'student_loginas') 
+    list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email', 'student_loginas')
+    search_fields = ['user__email', 'user__first_name', 'user__last_name', 'user__username']
 
 class SubmissionInline(admin.TabularInline):
     model = Submission
@@ -164,3 +165,5 @@ class SubmissionModelAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(assignment__course__instructor__user=request.user)
+
+    list_display = ('assignment', 'assignment_course', 'student', 'publish_date', 'passed', 'failed')
