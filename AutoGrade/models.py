@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.conf import settings
 from .storage import OverwriteStorage
 
 from os.path import basename
-from datetime import datetime
+from datetime import datetime, timedelta
 import string
 import random
 import time
@@ -52,6 +53,7 @@ class Course(models.Model):
     name = models.CharField(max_length=64)
     enroll_key = models.CharField(max_length=8, default=enroll_key, unique=True) # Secret key to enroll
     course_id = models.CharField(max_length=64) # CS101
+    max_extension_days = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -106,6 +108,19 @@ class Assignment(models.Model):
     class Meta():
         unique_together = ('course', 'title',)
 
+
+    def corrected_due_date(self, student=None):
+
+        aes = AssignmentExtension.objects.filter(assignment=self, student=student)
+        days_extended = aes.aggregate(Sum('days'))['days__sum']
+
+        if days_extended is None:
+            days_extended = 0
+
+        corrected_due_date = self.due_date + timedelta(days=days_extended)
+        return corrected_due_date
+
+
     def get_student_and_latest_submissions(self):
         # TODO: Try to acheive this by sub queries using Django ORM
         # Get students of this course
@@ -158,7 +173,7 @@ class Assignment(models.Model):
             return False
 
     def __str__(self):
-        return self.title
+        return self.title + " (" + self.course.course_id + ")"
 
 class OtherFile(models.Model):
     file = models.FileField(upload_to=other_files_directory_path, null=False, default=None, storage=OverwriteStorage())
@@ -188,6 +203,10 @@ class Submission(models.Model):
     def __str__(self):
         return self.assignment.title + " (" + self.student.user.email + " - id: " + str(self.id) + ")"
 
+class AssignmentExtension(models.Model):
+    assignment      = models.ForeignKey(Assignment)
+    student         = models.ForeignKey(Student)
+    days            = models.IntegerField(default=0)
 
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
