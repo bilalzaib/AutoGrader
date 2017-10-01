@@ -173,7 +173,7 @@ class AssignmentExtensionModelAdmin(admin.ModelAdmin):
         qs = super(AssignmentExtensionModelAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
-        # return qs.filter(assignment__course__instructor__user=request.user)
+        return qs.filter(assignment__course__instructor__user=request.user)
 
-    list_filter = ('assignment', )
+    # list_filter = ('assignment', )
     list_display = ('student', 'assignment', 'days')
