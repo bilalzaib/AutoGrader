@@ -110,8 +110,8 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
 
-            user.email_user(subject, message)    
-            
+            user.email_user(subject, message)
+
             """
             try:
                 user.email_user(subject, message)
@@ -121,7 +121,7 @@ def signup(request):
                 user.delete()
             """
 
-            
+
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=user.username, password=raw_password)
             login(request, user)
@@ -226,7 +226,7 @@ def course(request, course_id, assignment_id=0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
-        due_date = selected_assignment.due_date
+        due_date = selected_assignment.corrected_due_date(student)
         now_time = timezone.now()
 
         if due_date > now_time:
@@ -239,8 +239,12 @@ def course(request, course_id, assignment_id=0):
         # only one assignment file for now
         modifiable_filename = os.path.basename(selected_assignment.assignment_file.url)
 
+    else:
+        due_date = None # no assignment therefore no due date
+
     return render(request, 'course.html', {
             'assignment_zip_file': assignment_zip_file,
+            'corrected_due_date': due_date,
             'assignment_id': int(assignment_id),
             'course': course,
             'assignments': assignments,
@@ -273,9 +277,9 @@ def api(request, action):
                 if not assignment:
                     response_data = {"status": 404, "type": "ERROR",
                      "message": "Assignment doesn't exists"}
-                elif assignment and timezone.now() > assignment.due_date:
+                elif assignment and timezone.now() > assignment.corrected_due_date(student):
                     response_data = {"status": 400, "type": "ERROR",
-                     "message": "Assignment submission date expired"}
+                     "message": "Assignment submission date expired. You may be able to request an extension from the web interface."}
                 else:
                     submission = Submission(submission_file=request.FILES['submission_file'],
                         assignment=assignment,
@@ -337,7 +341,7 @@ def change_password(request):
 @login_required
 def resend_signup_email(request):
     user = request.user
-    
+
     current_site = get_current_site(request)
     subject = 'Activate Your FAST AutoGrader Account'
     message = render_to_string('account/account_activation_email.html', {
@@ -347,7 +351,7 @@ def resend_signup_email(request):
         'token': account_activation_token.make_token(user),
     })
 
-    user.email_user(subject, message)    
+    user.email_user(subject, message)
     messages.success(request, 'Verification email sent, check your email account.')
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -371,13 +375,13 @@ def change_email(request):
             'token': account_activation_token.make_token(user),
         })
 
-        user.email_user(subject, message)    
+        user.email_user(subject, message)
         messages.success(request, 'Email updated and verification email sent.')
     else:
         for field in form:
             for error in field.errors:
                 messages.warning(request, field.label + ": " + error)
-        
+
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @staff_member_required
@@ -442,7 +446,7 @@ def loginas(request, student_id):
     request.session['staff_loginas'] = True
     request.session['staff_loginas_referer'] = request.META.get('HTTP_REFERER')
     request.session['staff_loginas_userid'] = staff_user_id
-    
+
     return redirect('home')
 
 def logout_student(request):
