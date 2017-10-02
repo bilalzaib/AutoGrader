@@ -178,3 +178,5 @@ class AssignmentExtensionModelAdmin(admin.ModelAdmin):
     # list_filter = ('assignment', )
     search_fields = ('student__user__first_name', 'student__user__last_name', 'assignment__title', 'assignment__course__name')
     list_display = ('student', 'assignment', 'days', 'assignment_due_date', 'assignment_corrected_due_date', 'course_max_extensions', 'days_left_for_course')
+
+    raw_id_fields = ('assignment', 'student')
