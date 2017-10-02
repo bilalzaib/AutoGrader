@@ -221,6 +221,22 @@ class AssignmentExtension(models.Model):
     student         = models.ForeignKey(Student)
     days            = models.IntegerField(default=0)
 
+    def assignment_due_date(self):
+        return self.assignment.due_date
+    assignment_due_date.short_description = 'Due Date'
+
+    def assignment_corrected_due_date(self):
+        return self.assignment.corrected_due_date(self.student)
+    assignment_corrected_due_date.short_description = 'Corrected Due Date'
+
+    def course_max_extensions(self):
+        return self.assignment.course.max_extension_days
+    course_max_extensions.short_description = 'Total Extension Days for Course'
+
+    def days_left_for_course(self):
+        return self.student.get_late_days_left(self.assignment.course)
+    days_left_for_course.short_description = 'Extension Days Left'
+
 # Create zip file of Assignment
 @receiver(post_save, sender=Assignment)
 def create_assignment_zip_file(sender, instance, created, **kwargs):

@@ -176,4 +176,5 @@ class AssignmentExtensionModelAdmin(admin.ModelAdmin):
         return qs.filter(assignment__course__instructor__user=request.user)
 
     # list_filter = ('assignment', )
-    list_display = ('student', 'assignment', 'days')
+    search_fields = ('student__user__first_name', 'student__user__last_name', 'assignment__title', 'assignment__course__name')
+    list_display = ('student', 'assignment', 'days', 'assignment_due_date', 'assignment_corrected_due_date', 'course_max_extensions', 'days_left_for_course')
