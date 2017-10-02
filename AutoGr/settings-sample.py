@@ -223,3 +223,8 @@ DBBACKUP_STORAGE_OPTIONS = {'location': 'c:/ag-backups'}
 #DBBACKUP_STORAGE_OPTIONS = {
 #    'oauth2_access_token': 'my_token',
 #}
+
+
+
+# Set to False if you do not want the students to see Instructor test logs 
+ALLOW_INSTRUCTOR_TEST_LOG_VIEW = True    

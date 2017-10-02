@@ -224,6 +224,11 @@ def course(request, course_id, assignment_id=0):
 
     late_days_left = student.get_late_days_left(course)
 
+    try:
+        show_view_log_button = settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW
+    except AttributeError:
+        show_view_log_button = True 
+
     if (assignment_id != 0):
         selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
@@ -248,10 +253,11 @@ def course(request, course_id, assignment_id=0):
     return render(request, 'course.html', {
             'assignment_zip_file': assignment_zip_file,
             'corrected_due_date': due_date,
-            'late_days_left': late_days_left, 
+            'late_days_left': late_days_left,
             'assignment_id': int(assignment_id),
             'course': course,
             'assignments': assignments,
+            'show_view_log_button': show_view_log_button,
             'selected_assignment': selected_assignment,
             'submission_history': submission_history,
             'time_left' : time_left,
