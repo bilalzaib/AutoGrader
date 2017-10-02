@@ -84,7 +84,7 @@
 						<td>{{ student.get_roll_number }}</td>
 						<td class="right">{% firstof submission.passed "-" %}</td>
 						<td class="right">{% firstof submission.failed "-" %}</td>
-						<td class="right">{% firstof submission.get_score "-" %}</td>
+						<td class="right">{% firstof submission.get_score|floatformat:2 "-" %}</td>
 						<td class="right">{% firstof submission.publish_date|date:"Y-m-d H:i:s" "-" %}</td>
 						<td class="right no-print">
 							{% if submission.id %}
