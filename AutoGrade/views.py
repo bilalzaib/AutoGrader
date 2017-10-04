@@ -19,7 +19,7 @@ from django.utils.encoding import smart_str
 from django.http import JsonResponse
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
@@ -151,6 +151,7 @@ def activate(request, uidb64, token):
 def account_activation_sent(request):
     return render(request, 'account/account_activation_sent.html')
 
+@login_required(login_url='login')
 def download(request):
     # TODO: break when user try to download Instructor Test file
     submission_id = request.GET.get('sid')
@@ -160,7 +161,8 @@ def download(request):
 
     # Check
     if assignment_id:
-        assignment = Assignment.objects.filter(id=assignment_id)
+        student = Student.objects.get(user=request.user);
+        assignment = Assignment.objects.filter(id=assignment_id, course__in=student.courses.all(), open_date__lte=timezone.now()).distinct()
         if assignment.exists():
             assignment = assignment.first()
             if action == "student_test":
@@ -173,13 +175,17 @@ def download(request):
                 path = assignment.assignment_file.url
             else:
                 return Http404
+        else:
+            path = ""
     elif submission_id:
-        submission = Submission.objects.get(id=submission_id)
+        submission = Submission.objects.get(id=submission_id, student__user=request.user)
         # Download modifiable_file of student when user is staff or admin
         if submission and action == "modifiable_file" and (request.user.is_staff or request.user.is_superuser):
             path = submission.get_modifiable_file()
-        elif submission:
+        elif submission and settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW:
             path = submission.get_log_file()
+        else: 
+            path = ""
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
@@ -230,7 +236,11 @@ def course(request, course_id, assignment_id=0):
         show_view_log_button = True 
 
     if (assignment_id != 0):
-        selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
+        try:
+            selected_assignment = Assignment.objects.get(id=assignment_id, open_date__lte=timezone.now())
+        except ObjectDoesNotExist:
+            raise Http404;
+
         submission_history = Submission.objects.filter(student=student,assignment=selected_assignment).order_by("-publish_date")
         assignment_zip_file = os.path.split(selected_assignment.student_test.url)[0] + "/assignment" + str(assignment_id) + ".zip"
         due_date = selected_assignment.corrected_due_date(student)
