@@ -188,7 +188,7 @@ def download(request):
         else:
             path = ""
     else:
-    	path = ""
+        path = ""
       
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
