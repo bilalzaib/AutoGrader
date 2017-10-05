@@ -10,6 +10,9 @@
   {# Load CSS and JavaScript #}
   {% bootstrap_css %}
   <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.js"></script>
+
   {% bootstrap_javascript %}
 
   <style>
@@ -58,10 +61,10 @@
 
   {% if user.is_authenticated and not user.is_active %}
   <div class="alert alert-danger center">
-      Kindly verify your email address ({{user.email}}) &dash; 
-      <a href="{% url 'resend_signup_email' %}">Resend Email</a> or 
-      <a href="#" onclick="$('#changeEmail').fadeToggle('fast');">Change Email</a>  
-      
+      Kindly verify your email address ({{user.email}}) &dash;
+      <a href="{% url 'resend_signup_email' %}">Resend Email</a> or
+      <a href="#" onclick="$('#changeEmail').fadeToggle('fast');">Change Email</a>
+
   </div>
   <div id="changeEmail" style="display: none; ">
     <form class="form-inline center" method="post" action="{% url 'change_email'%}">
@@ -71,7 +74,7 @@
         <input type="email" class="form-control" id="email" name="email" placeholder="{{ user.email }}">
       </div>
       &nbsp;<button type="submit" class="btn btn-primary">Change Email</button>
-    </form> 
+    </form>
     <hr />
   </div>
   {% endif %}

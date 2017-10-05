@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from .models import Student, Course, Assignment, Submission
+from .models import Student, Course, Assignment, Submission, AssignmentExtension
 from .forms import SignUpForm, EnrollForm, ChangeEmailForm
 from django.contrib import messages
 from .grader import run_student_tests
@@ -227,8 +227,10 @@ def course(request, course_id, assignment_id=0):
     time_left = ''
     modifiable_filename = None
     expired = False
+    can_request_extension = False
 
     late_days_left = student.get_late_days_left(course)
+    late_days_needed = 0
 
     try:
         show_view_log_button = settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW
@@ -254,6 +256,11 @@ def course(request, course_id, assignment_id=0):
             time_left = "Submission date has passed!"
             expired = True
 
+            late_delta = dateutil.relativedelta.relativedelta(now_time, due_date)
+            late_days_needed = late_delta.days + 1 # a second above is a full day
+            if late_days_needed <= late_days_left:
+                can_request_extension = True
+
         # only one assignment file for now
         modifiable_filename = os.path.basename(selected_assignment.assignment_file.url)
 
@@ -264,7 +271,9 @@ def course(request, course_id, assignment_id=0):
             'assignment_zip_file': assignment_zip_file,
             'corrected_due_date': due_date,
             'late_days_left': late_days_left,
+            'late_days_needed': late_days_needed,
             'assignment_id': int(assignment_id),
+            'can_request_extension': can_request_extension,
             'course': course,
             'assignments': assignments,
             'show_view_log_button': show_view_log_button,
@@ -478,3 +487,40 @@ def logout_student(request):
     else:
         logout(request)
         return redirect('login')
+
+
+@login_required(login_url='login')
+def request_extension(request):
+    student = Student.objects.get(user = request.user)
+    assignment_id = request.GET.get('aid')
+
+
+
+    selected_assignment = Assignment.objects.get(id=assignment_id)
+
+    logging.warn("Processing extension request for: " + str(student) + " on "
+                    + str(assignment_id) + " - " + str(selected_assignment))
+
+    now_time = timezone.now()
+    due_date = selected_assignment.corrected_due_date(student)
+
+    late_delta = dateutil.relativedelta.relativedelta(now_time, due_date)
+    late_days_needed = late_delta.days + 1 # a second above is a full day
+    late_days_left = student.get_late_days_left(selected_assignment.course)
+
+    if not due_date > now_time:
+        if late_days_needed <= late_days_left:
+            extension = AssignmentExtension(assignment=selected_assignment, student = student, days=late_days_needed)
+            extension.save()
+            status = 200
+            out = "Your extension request has been processed succesfully. "
+        else:
+            status = 500
+            out = "Insufficient number of late days remaining. Cannot process extension request. "
+
+    else:
+        status = 500
+        out = "There is still time left in assignment submission. Cannot process extension request. "
+
+
+    return HttpResponse(out, content_type="text/plain", status=status)

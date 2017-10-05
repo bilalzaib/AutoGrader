@@ -1,18 +1,18 @@
 from django.conf.urls import url
 from . import views
 from .auth import CustomAuthentication
-from django.contrib.auth import views as auth_views        
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^$', views.home, name='home'),
-    
+
     url(r'^login/$', auth_views.login, {'authentication_form': CustomAuthentication, 'template_name': 'login.html'}, name='login'),
     url(r'^logout/$', views.logout_student, name='logout'),
     url(r'^signup/$', views.signup, name='signup'),
-    
+
     url(r'^resend_signup_email/$', views.resend_signup_email, name='resend_signup_email'),
     url(r'^change_email/$', views.change_email, name='change_email'),
-    
+
     url(r'^api/(?P<action>[0-9a-zA-Z_]+)$', views.api, name='api'),
 
     url(r'^assignment_report/(?P<assignment_id>[0-9a-zA-Z_]+)$', views.assignment_report, name='assignment_report'),
@@ -33,5 +33,6 @@ urlpatterns = [
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         views.activate, name='activate'),
     url(r'^loginas/(?P<student_id>[0-9a-zA-Z_]+)$$', views.loginas, name='loginas'),
+    url(r'^request_extension/$', views.request_extension),
 
 ]
