@@ -178,7 +178,8 @@ def download(request):
         else:
             path = ""
     elif submission_id:
-        submission = Submission.objects.get(id=submission_id, student__user=request.user)
+        submission = Submission.objects.get(id=submission_id)
+        
         # Download modifiable_file of student when user is staff or admin
         if submission and action == "modifiable_file" and (request.user.is_staff or request.user.is_superuser):
             path = submission.get_modifiable_file()
@@ -188,7 +189,7 @@ def download(request):
             path = ""
     else:
         path = ""
-
+      
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
