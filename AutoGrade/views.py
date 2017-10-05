@@ -189,7 +189,7 @@ def download(request):
             path = ""
     else:
     	path = ""
-
+      
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
