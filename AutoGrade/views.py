@@ -186,6 +186,8 @@ def download(request):
             path = submission.get_log_file()
         else:
             path = ""
+    else:
+        path = ""
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
