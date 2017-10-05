@@ -184,7 +184,7 @@ def download(request):
             path = submission.get_modifiable_file()
         elif submission and settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW:
             path = submission.get_log_file()
-        else: 
+        else:
             path = ""
 
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -219,7 +219,7 @@ def course(request, course_id, assignment_id=0):
 
     course = Course.objects.get(id=course_id)
 
-    assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now())
+    assignments = Assignment.objects.filter(course=course, open_date__lte=timezone.now()).order_by('due_date')
 
     selected_assignment = None
     submission_history = None
@@ -233,7 +233,7 @@ def course(request, course_id, assignment_id=0):
     try:
         show_view_log_button = settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW
     except AttributeError:
-        show_view_log_button = True 
+        show_view_log_button = True
 
     if (assignment_id != 0):
         try:
