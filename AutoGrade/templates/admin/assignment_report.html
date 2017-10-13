@@ -66,25 +66,25 @@
 					<tr>
                         <th>No.</th>
 						<th data-sortable="true">Name</th>
-						<th data-sortable="true">Username</th>
 						<th data-order="asc" data-sortable="true">Roll No</th>
+						<th data-sortable="true" class="right">Score ({{assignment.total_points }} Points)</th>
 						<th data-sortable="true" class="right">Passed</th>
 						<th data-sortable="true" class="right">Failed</th>
-						<th data-sortable="true" class="right">Score ({{assignment.total_points }} Points)</th>
+						<th data-sortable="true" class="right">Submission Count</th>
 						<th data-sortable="true" class="right">Submission Date</th>
 						<th class="right no-print">Action</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for submission, student in submissions %}
+					{% for submission, student, student_submission_count in submissions %}
 					<tr>
                         <td>{{ forloop.counter }}</td>
 						<td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
-						<td>{{ student.user.username }}</td>
 						<td>{{ student.get_roll_number }}</td>
+						<td class="right">{% firstof submission.get_score|floatformat:2 "-" %}</td>
 						<td class="right">{% firstof submission.passed "-" %}</td>
 						<td class="right">{% firstof submission.failed "-" %}</td>
-						<td class="right">{% firstof submission.get_score|floatformat:2 "-" %}</td>
+						<td data-sortable="true" class="right">{{ student_submission_count }}</td>
 						<td class="right">{% firstof submission.publish_date|date:"Y-m-d H:i:s" "-" %}</td>
 						<td class="right no-print">
 							{% if submission.id %}

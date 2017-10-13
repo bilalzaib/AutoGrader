@@ -133,11 +133,13 @@ class Assignment(models.Model):
     def get_student_and_latest_submissions(self):
         # TODO: Try to acheive this by sub queries using Django ORM
         # Get students of this course
-        students = Student.objects.filter(courses=self.course)
+        students = Student.objects.filter(courses=self.course).order_by('user__email')
         submissions = []
         for student in students:
-            submission = Submission.objects.filter(student=student, assignment=self).order_by("-publish_date").first()
-            submissions.append([submission, student])
+            submission = Submission.objects.filter(student=student, assignment=self).order_by("-publish_date")
+            student_submission_count = len(submission)
+            submission = submission.first()
+            submissions.append([submission, student, student_submission_count])
 
         return submissions
 
@@ -153,7 +155,7 @@ class Assignment(models.Model):
         submissions = self.get_student_and_latest_submissions() # include all students of the assignment's course annd submission can be empty
 
         submission_count = 0
-        for submission, student in submissions:
+        for submission, student, _ in submissions:
             if submission != None:
                 modifiable_file = submission.get_modifiable_file()
                 path = moss_folder + basename(modifiable_file).replace(".", "-" + submission.student.get_roll_number() + ".")

@@ -166,6 +166,7 @@ class SubmissionModelAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(assignment__course__instructor__user=request.user)
     list_display = ('assignment', 'assignment_course', 'student', 'publish_date', 'passed', 'failed')
+    search_fields = ('student__user__first_name', 'student__user__last_name', 'student__user__email', 'assignment__title', 'assignment__course__name')
 
 @admin.register(AssignmentExtension)
 class AssignmentExtensionModelAdmin(admin.ModelAdmin):
