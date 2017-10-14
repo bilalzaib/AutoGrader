@@ -52,12 +52,12 @@ def run_test(out_file, target_folder, timeout):
     cur_directory = os.getcwd()
     os.chdir(target_folder)
 
+    from subprocess import Popen
+
     with open(out_file, 'w') as f:
-        old_stdout = sys.stdout 
-        sys.stdout = f
-        import pytest
-        pytest.main(['--timeout=' + str(timeout)])
-        sys.stdout = old_stdout  
+        process = Popen(["py.test", "--timeout", str(timeout)], stdout=f, stderr=f, shell=True)
+        (output, err) = process.communicate()
+        exit_code = process.wait()
 
     logger.debug("Restoring working directory ...")
     os.chdir(cur_directory)
@@ -88,16 +88,10 @@ def run_student_tests(target_folder, total_points, timeout):
     p = Process(target=run_test, args=(os.path.basename(out_file), target_folder, timeout,))
     logger.debug("Starting test process for submission")
     p.start()
-    p.join(timeout + 1) # Pytest will also timeout
+    p.join() # Pytest will also timeout
 
-    timeout = False
     #In case process is stuck in infinite loop or something
-    if p.is_alive():
-        logger.debug("Terminating process [TIMEOUT]")
-        p.terminate()
-        with open(out_file, 'w') as f:
-            f.write("\n\nProcess Terminated due to timeout.")
-        timeout = True
+    
     with open(out_file) as f:
         out = f.read()
 
@@ -116,5 +110,7 @@ def run_student_tests(target_folder, total_points, timeout):
 
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
+
+    timeout = (out.find("+ Timeout +") != -1)
 
     return [score, timeout]
