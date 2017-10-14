@@ -90,13 +90,14 @@ def run_student_tests(target_folder, total_points, timeout):
     p.start()
     p.join(timeout + 1) # Pytest will also timeout
 
+    timeout = False
     #In case process is stuck in infinite loop or something
     if p.is_alive():
         logger.debug("Terminating process [TIMEOUT]")
         p.terminate()
         with open(out_file, 'w') as f:
             f.write("\n\nProcess Terminated due to timeout.")
-
+        timeout = True
     with open(out_file) as f:
         out = f.read()
 
@@ -116,4 +117,4 @@ def run_student_tests(target_folder, total_points, timeout):
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
 
-    return [score, out]
+    return [score, timeout]
