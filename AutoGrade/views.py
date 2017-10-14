@@ -179,7 +179,7 @@ def download(request):
             path = ""
     elif submission_id:
         submission = Submission.objects.get(id=submission_id)
-        
+
         # Download modifiable_file of student when user is staff or admin
         if submission and action == "modifiable_file" and (request.user.is_staff or request.user.is_superuser):
             path = submission.get_modifiable_file()
@@ -189,7 +189,7 @@ def download(request):
             path = ""
     else:
         path = ""
-      
+
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
@@ -451,7 +451,7 @@ def assignment_aggregate_report(request, assignment_id):
     submissions = assignment.get_student_and_latest_submissions()
 
     all_submissions = {}
-    for submission, student in submissions:
+    for submission, student, _ in submissions:
         if submission:
             file_path = submission.get_modifiable_file()
             file_path = os.path.join(settings.MEDIA_ROOT, file_path)
