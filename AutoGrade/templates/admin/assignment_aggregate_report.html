@@ -48,7 +48,7 @@
 			<h3 class="center">{{assignment.title}} ({{assignment.course}})</h3>
 			<hr class="no-print" />
 			<div>
-            {% for submission, student in submissions %}
+            {% for submission, student, _ in submissions %}
                 {{ student.user.first_name }} {{ student.user.last_name }}  ({{ student.user.email }}) Score: {% firstof submission.passed "-" %} / {% firstof submission.failed "-" %} ({% firstof submission.get_score "-" %})<br />
                 <pre class="modal-assignment-content"><code>{{ submission.file_content }}</code></pre>
             {% endfor %}
