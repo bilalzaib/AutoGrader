@@ -77,10 +77,10 @@ class StudentModelAdmin(admin.ModelAdmin):
     student_loginas.allow_tags = True
 
     def get_queryset(self, request):
-        qs = super(StudentModelAdmin, self).get_queryset(request)
+        qs = super(StudentModelAdmin, self).get_queryset(request).distinct() 
         if request.user.is_superuser:
             return qs
-        return qs.filter(courses__instructor__user=request.user)
+        return qs.filter(courses__instructor__user=request.user).distinct() 
 
     list_display = ('student_username', 'student_firstname', 'student_lastname', 'student_email', 'student_loginas')
     search_fields = ['user__email', 'user__first_name', 'user__last_name', 'user__username']
