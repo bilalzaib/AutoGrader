@@ -54,10 +54,13 @@ def run_test(out_file, target_folder, timeout):
 
     with open(out_file, 'w') as f:
         old_stdout = sys.stdout 
+        old_stderr = sys.stderr 
         sys.stdout = f
+        sys.stderr = f
         import pytest
         pytest.main(['--timeout=' + str(timeout)])
         sys.stdout = old_stdout  
+        sys.stderr = old_stderr  
 
     logger.debug("Restoring working directory ...")
     os.chdir(cur_directory)
@@ -88,14 +91,7 @@ def run_student_tests(target_folder, total_points, timeout):
     p = Process(target=run_test, args=(os.path.basename(out_file), target_folder, timeout,))
     logger.debug("Starting test process for submission")
     p.start()
-    p.join(timeout + 1) # Pytest will also timeout
-
-    #In case process is stuck in infinite loop or something
-    if p.is_alive():
-        logger.debug("Terminating process [TIMEOUT]")
-        p.terminate()
-        with open(out_file, 'w') as f:
-            f.write("\n\nProcess Terminated due to timeout.")
+    p.join() # Pytest will also timeout
 
     with open(out_file) as f:
         out = f.read()
@@ -116,4 +112,8 @@ def run_student_tests(target_folder, total_points, timeout):
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
 
-    return [score, out]
+    # Timeout is here because of different behavior of pytest on Linux and Windows environment
+    # For complete discussion: https://github.com/BilalZaib/AutoGrader/pull/85#discussion_r144712666
+    timeout = (out.find("+ Timeout +") != -1)
+
+    return [score, timeout]

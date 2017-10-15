@@ -331,15 +331,19 @@ def api(request, action):
                     # Move Student Test File
                     shutil.copy(assignment.student_test.url, extract_directory)
 
-                    score, outlog = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
+                    score, timeout = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
 
                     submission.passed  = score[0]
                     submission.failed  = score[1]
 
                     submission.save()
 
-                    response_data = {"status": 200, "type": "SUCCESS",
-                         "message": [score[0], score[1], submission.get_score()]}
+                    if timeout:
+                        response_data = {"status": 400, "type": "ERROR",
+                            "message": "Timeout error. You received zero for this submission."}
+                    else:
+                        response_data = {"status": 200, "type": "SUCCESS",
+                            "message": [score[0], score[1], submission.get_score()]}
 
             else:
                 response_data = {"status": 400, "type": "ERROR",
