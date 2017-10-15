@@ -112,7 +112,7 @@ def run_student_tests(target_folder, total_points, timeout):
     logger.debug("Read test line [" + res_line.strip("=") + "]")
     logger.debug("Calculated score: " + str(score))
 
-    # Here because of pytest behavior in Linux and Windows enviorment
+    # Timeout is here because of different behavior of pytest on Linux and Windows environment
     # For complete discussion: https://github.com/BilalZaib/AutoGrader/pull/85#discussion_r144712666
     timeout = (out.find("+ Timeout +") != -1)
 
