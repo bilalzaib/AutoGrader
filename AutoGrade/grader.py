@@ -7,7 +7,8 @@ import sys
 import re
 import time
 from datetime import datetime
-from subprocess import Popen
+from multiprocessing import Process, Manager, Queue
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,25 @@ def get_score_from_result_line(res_line, total_points):
 
     return (passed, failed)
 
+def run_test(out_file, target_folder, timeout):
+    # chdir in main process create issue for django
+    logger.debug("Changing directory ... ")
+    cur_directory = os.getcwd()
+    os.chdir(target_folder)
+
+    with open(out_file, 'w') as f:
+        old_stdout = sys.stdout 
+        old_stderr = sys.stderr 
+        sys.stdout = f
+        sys.stderr = f
+        import pytest
+        pytest.main(['--timeout=' + str(timeout)])
+        sys.stdout = old_stdout  
+        sys.stderr = old_stderr  
+
+    logger.debug("Restoring working directory ...")
+    os.chdir(cur_directory)
+
 def run_student_tests(target_folder, total_points, timeout):
     # TODO: Disable networking for submission file
     # Source: https://gist.github.com/hangtwenty/9200597e3be274c79896
@@ -63,14 +83,16 @@ def run_student_tests(target_folder, total_points, timeout):
 
     score = (0, 0) # passed, failed
 
+    logger.debug("Capturing stdout")
+
     out_file =  os.path.join(target_folder, "test-results" + ".log")
     touch(out_file)
 
-    with open(out_file, 'w') as f:
-        process = Popen(["py.test", "--timeout", str(timeout)], cwd=target_folder, stdout=f, stderr=f, shell=True)
-        (output, err) = process.communicate()
-        exit_code = process.wait()
-    
+    p = Process(target=run_test, args=(os.path.basename(out_file), target_folder, timeout,))
+    logger.debug("Starting test process for submission")
+    p.start()
+    p.join() # Pytest will also timeout
+
     with open(out_file) as f:
         out = f.read()
 
