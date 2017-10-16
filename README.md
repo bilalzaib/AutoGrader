@@ -83,7 +83,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Hafiz M. Bilal Zaib** - *Initial work* - [BilalZaib](https://github.com/BilalZaib)
+* **Hafiz M. Bilal Zaib** - *Initial coding* - [BilalZaib](https://github.com/BilalZaib)
 * **Mohammad Nauman** - *Design and requirement gathering* - [recluze](https://github.com/recluze)
 * **Syed Owais Ali Chishti** - *Funtionality integrations* - [soachishti](https://github.com/soachishti)
 
