@@ -53,6 +53,12 @@ class CourseStudentsInline(admin.TabularInline):
 class CourseModelAdmin(admin.ModelAdmin):
     inlines = [CourseStudentsInline,]
 
+    def students_stat(self, obj):
+        return '<a target="_blank" href="' + reverse("home") + 'course_students_stat/' + str(obj.id) + '">Students Stat</a>'
+
+    students_stat.short_description = 'Students Stat'
+    students_stat.allow_tags = True
+
     # This will hide object name from tabular inline.
     class Media:
         css = { "all" : ("css/hide_admin_original.css",) }
@@ -63,7 +69,7 @@ class CourseModelAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(instructor__user=request.user)
 
-    list_display = ('name', 'enroll_key', 'instructor')
+    list_display = ('name', 'enroll_key', 'instructor', 'students_stat')
     exclude = ('courses', )
 
 @admin.register(Student)
