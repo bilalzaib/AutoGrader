@@ -10,7 +10,7 @@ def course_students_stat(request, course_id):
     course = Course.objects.get(id = course_id)
     course_student_data = get_course_student_stat(course)
 
-    return render(request, 'report/course_students_stat.html', {
+    return render(request, 'reports/course_students_stat.html', {
         'course_student_data': course_student_data,
         'course': course,
         'generated_on': timezone.now()
