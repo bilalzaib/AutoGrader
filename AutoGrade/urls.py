@@ -1,7 +1,9 @@
 from django.conf.urls import url
 from . import views
+from . import reportviews
 from .auth import CustomAuthentication
 from django.contrib.auth import views as auth_views
+
 
 urlpatterns = [
     url(r'^$', views.home, name='home'),
@@ -34,5 +36,5 @@ urlpatterns = [
         views.activate, name='activate'),
     url(r'^loginas/(?P<student_id>[0-9a-zA-Z_]+)$$', views.loginas, name='loginas'),
     url(r'^request_extension/$', views.request_extension),
-
+    url(r'^course_students_stat/(?P<course_id>[0-9a-zA-Z_]+)$', reportviews.course_students_stat, name = 'course_students_stat'),
 ]

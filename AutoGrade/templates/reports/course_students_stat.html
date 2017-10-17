@@ -1,0 +1,100 @@
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Course Report #{{course.id}} - {{course}}</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+	{# Load CSS and JavaScript #}
+	{% bootstrap_css %}
+	<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-awusxf8AUojygHf2+joICySzB780jVvQaVCAt1clU3QsyAitLGul28Qxb2r1e5g+" crossorigin="anonymous">
+  	{% bootstrap_javascript %}
+
+	<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+
+	<style>
+	.hljs {
+		background: transparent;
+	}
+	@media print
+	{
+	    .no-print, .no-print *
+	    {
+	        display: none !important;
+	    }
+	}
+	.center {
+		text-align: center;
+	}
+	.right {
+		text-align: right;
+	}
+	</style>
+</head>
+<body>
+
+<div class="container">
+<div class="row">
+	<div class="col col-sm-12">
+		{% if course_student_data %}
+			<h2 class="center">Course Report #{{course.id}}</h2>
+			<h3 class="center">Students Stat of Course ({{course}})</h3>
+			<hr class="no-print" />
+			<div class="row no-print">
+				<div class="col col-sm-12"></div>
+				<div class="col col-sm-12 center">                
+					<a href="#" class="btn btn-sm btn-default" onclick="window.print();">Print</a>
+					<!--<a href="#" class="btn btn-sm btn-info" onclick="printPDF('report{{assignment.id}}.pdf');">Save as PDF</a>-->
+				</div>
+
+			</div>
+			<hr class="no-print" />
+			<table data-toggle="table" class="table table-striped">
+				<thead>
+					<tr>
+                        <th>No.</th>
+						<th data-sortable="true">Name</th>
+						<th data-order="asc" data-sortable="true">Roll No</th>
+						<th data-sortable="true" class="right">Assignments Completed)</th>
+						<th data-sortable="true" class="right">Late Days Remaining</th>
+						<th data-sortable="true" class="right">Aveg. Marks</th>
+						<th data-sortable="true" class="right">Aveg. Submissions</th>
+						<th data-sortable="true" class="right">Aveg. Time Taken</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for student, completed_assignments, late_days_remaining, average_marks, average_submissions, average_time_taken in course_student_data %}
+					<tr>
+                        <td>{{ forloop.counter }}</td>
+						<td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+						<td>{{ student.get_roll_number }}</td>
+						<td class="right">{{ completed_assignments }}</td>
+						<td class="right">{{ late_days_remaining }}</td>
+						<td class="right">{{ average_marks|floatformat:2 }}</td>
+						<td data-sortable="true" class="right">{{ average_submissions|floatformat:2 }}</td>
+						<td class="right">{{ average_time_taken }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p>Invalid Course</p>
+		{% endif %}
+
+	</div>
+	<div class="row">
+		<div class="col col-sm-4"></div>
+		<div class="col col-sm-4 center"><br /><b>Generated on: </b>{{ generated_on }}</div>
+		<div class="col col-sm-4"></div>
+	</div>
+</div>
+
+</body>
+</html>
