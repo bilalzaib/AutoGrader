@@ -18,7 +18,7 @@ This system is developed for [FAST-NUCES Peshawar Campus](http://pwr.nu.edu.pk) 
 
 Check [requirements.txt](requirements.txt) for the prerequisites packages. You can install requirment package using following command:
  
-```
+```shell
 cd AutoGrader/
 pip install -r requirements.txt
 ```
@@ -27,14 +27,14 @@ pip install -r requirements.txt
 
 For the installation first grab the latest source from the [GitHub](https://github.com/BilalZaib/AutoGrader)
 
-```
+```shell
 git clone git@github.com:BilalZaib/AutoGrader.git
 cd AutoGrader/
 ```
 
 Edit settings.py of Django
 
-```
+```shell
 cd AutoGr/
 mv settings-sample.py settings.py
 vi settings.py
@@ -43,7 +43,7 @@ cd ../
 Note: You have to add secret key and SMTP detail in this file. You can generate Django secret key from any online website.
 
 Setting up super user for Django
-```
+```shell
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
