@@ -78,7 +78,7 @@
 						<td class="right">{{ completed_assignments }}</td>
 						<td class="right">{{ late_days_remaining }}</td>
 						<td class="right">{{ average_marks|floatformat:2 }}</td>
-						<td data-sortable="true" class="right">{{ average_submissions }}</td>
+						<td data-sortable="true" class="right">{{ average_submissions|floatformat:2 }}</td>
 						<td class="right">{{ average_time_taken }}</td>
 					</tr>
 					{% endfor %}

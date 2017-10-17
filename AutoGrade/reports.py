@@ -26,10 +26,15 @@ def get_course_student_stat(course):
                 total_time_taken = total_time_taken + delta
 
         late_days_remaining = student.get_late_days_left(course)
-        average_marks = total_marks_in_assignments/completed_assignments
-        average_submissions = student_submission_count//completed_assignments
-        average_time_taken = total_time_taken/(completed_assignments)
-        average_time_taken -= timedelta(microseconds=average_time_taken.microseconds)
+        average_marks = 0
+        average_submissions = 0
+        average_time_taken = 0
+        if completed_assignments:
+            average_marks = total_marks_in_assignments/completed_assignments
+            average_submissions = student_submission_count/completed_assignments
+            average_time_taken = total_time_taken/(completed_assignments)
+            average_time_taken -= timedelta(microseconds=average_time_taken.microseconds)
+
         course_student_data.append([student, completed_assignments, late_days_remaining, average_marks, average_submissions, average_time_taken])
 
     return course_student_data

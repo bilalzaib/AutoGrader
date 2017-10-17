@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 
-from .models import *
-from .reports import *
+from .models import Course
+from .reports import get_course_student_stat
 
 @staff_member_required
 def course_students_stat(request, course_id):
