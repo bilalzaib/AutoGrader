@@ -31,7 +31,7 @@ def get_course_student_stat(course):
         average_time_taken = 0
         if completed_assignments:
             average_marks = total_marks_in_assignments/completed_assignments
-            average_submissions = student_submission_count/completed_assignments
+            average_submissions = student_submission_count/float(completed_assignments)
             average_time_taken = total_time_taken/(completed_assignments)
             average_time_taken -= timedelta(microseconds=average_time_taken.microseconds)
 
