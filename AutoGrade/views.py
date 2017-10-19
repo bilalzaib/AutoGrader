@@ -180,8 +180,10 @@ def download(request):
     elif submission_id:
         submission = Submission.objects.get(id=submission_id)
 
-        # Download modifiable_file of student when user is staff or admin
-        if submission and action == "modifiable_file" and (request.user.is_staff or request.user.is_superuser):
+        # Download modifiable_file of student when user is staff or admin or user himself
+        allow_downloading_modifiable_file = request.user.is_staff or request.user.is_superuser or (submission.student.user == request.user)
+
+        if submission and action == "modifiable_file" and allow_downloading_modifiable_file:
             path = submission.get_modifiable_file()
         elif submission and settings.ALLOW_INSTRUCTOR_TEST_LOG_VIEW:
             path = submission.get_log_file()

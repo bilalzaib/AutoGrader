@@ -116,7 +116,7 @@
 	 						<th>Passed</th>
 	 						<th>Failed</th>
 	 						<th>Score</th>
-	 						{% if show_view_log_button %}<th>Log</th>{% endif %}
+	 						<th>View</th>
 	 					</tr>
 	 					{% for submission in submission_history %}
 	 					<tr>
@@ -125,7 +125,11 @@
 	 						<td>{{ submission.passed }}</td>
 	 						<td>{{ submission.failed }}</td>
 	 						<td>{{ submission.get_score | floatformat:2}}/{{ submission.assignment.total_points }}</td>
-	 						{% if show_view_log_button %}<td><a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=log_file&raw=1" class="btn btn-info btn-sm">VIEW</a></td>{% endif %}
+							<td>
+		 						{% if show_view_log_button %}<a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=log_file&raw=1" class="btn btn-info btn-sm">Log</a>{% endif %}
+								<a href="" data-toggle="modal" data-target="#logModal" data-load-url="{% url 'home' %}download/?sid={{ submission.id }}&action=modifiable_file&raw=1" class="btn btn-success btn-sm">Code</a>
+							</td>
+
 	 					</tr>
 	 					{% endfor %}
 	 				</table>
