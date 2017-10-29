@@ -22,6 +22,12 @@ import mosspy
 import logging
 from .grader import touch
 
+TEST_INPUT_CHOICES = (
+	('0', 'Pytest'),
+    ('1', 'STDIN'),
+    ('2', 'File'),
+)
+
 def other_files_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'uploads/assignment/course_{0}/{1}/{2}'.format(instance.assignment.course.id, instance.assignment.title.replace(" ","-").lower(), filename)
@@ -96,8 +102,21 @@ class Student(models.Model):
         return self.user.first_name + " " + self.user.last_name + " (" + self.user.email + ")"
 
 
+class Language(models.Model):
+    name            = models.CharField(max_length=64, null=False, default=None)
+    moss_name       = models.CharField(max_length=64, null=False, default=None)
+    compile_cmd     = models.CharField(max_length=255, null=False, default=None)
+    execution_cmd   = models.CharField(max_length=255, null=False, default=None)
+    executable_name = models.CharField(max_length=255, null=False, default=None)
+    is_interpreted  = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
 class Assignment(models.Model):
     course          = models.ForeignKey(Course, on_delete=models.CASCADE, null=False, default=None)
+    language        = models.ForeignKey(Language, null=True)
 
     title           = models.CharField(max_length=64, null=False, default=None)
     description     = models.TextField(max_length=8192, null=True, default=None)
@@ -105,6 +124,8 @@ class Assignment(models.Model):
     # Files
     instructor_test = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
     student_test    = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
+    test_input_type = models.CharField(max_length=1, choices=TEST_INPUT_CHOICES, default=0) # None, STDIN, File # TODO:  Add constraint for student_test and instructor_test for valid file name
+
     assignment_file = models.FileField(upload_to=assignment_directory_path, null=False, default=None, storage=OverwriteStorage())
 
     total_points    = models.IntegerField(default=25)
@@ -167,9 +188,13 @@ class Assignment(models.Model):
             logging.debug("MOSS: No submissions available for generating Moss report")
             return False
 
-        m = mosspy.Moss(settings.MOSS_USERID, "python")
+        if not self.language:
+            raise EnvironmentError("Language not assigned for Assignment")
+
+        assignment_extension = self.assignment_file.url.split(".")[-1] # get extension of assignment files
+        m = mosspy.Moss(settings.MOSS_USERID, assignment.language.moss_name)
         m.addBaseFile(self.assignment_file.url)
-        m.addFilesByWildcard(moss_folder + "*.py")
+        m.addFilesByWildcard(moss_folder + "*." + assignment_extension)
 
         url = m.send()
         if url:
