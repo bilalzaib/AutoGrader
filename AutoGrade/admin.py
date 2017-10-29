@@ -187,3 +187,8 @@ class AssignmentExtensionModelAdmin(admin.ModelAdmin):
     list_display = ('student', 'assignment', 'days', 'assignment_due_date', 'assignment_corrected_due_date', 'course_max_extensions', 'days_left_for_course')
 
     raw_id_fields = ('assignment', 'student')
+
+@admin.register(Language)
+class LanguageModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'moss_name', 'compile_cmd', 'execution_cmd', 'executable_name', 'is_interpreted')
+    pass

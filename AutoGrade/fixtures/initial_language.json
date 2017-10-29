@@ -1,0 +1,122 @@
+[
+  {
+    "model": "AutoGrade.language",
+    "pk": 1,
+    "fields": {
+      "name": "Python 3 (Pytest)",
+      "moss_name": "python",
+      "compile_cmd": "python3 -m py_compile {:mainfile}",
+      "execution_cmd": "py.test3 --timeout {:timeout}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 2,
+    "fields": {
+      "name": "Python 2 (Pytest)",
+      "moss_name": "python",
+      "compile_cmd": "python3 -m py_compile {:mainfile}",
+      "execution_cmd": "py.test2 --timeout {:timeout}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 3,
+    "fields": {
+      "name": "Python 3",
+      "moss_name": "python",
+      "compile_cmd": "python3 -m py_compile {:mainfile}",
+      "execution_cmd": "python3 {:mainfile}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 4,
+    "fields": {
+      "name": "Python 2",
+      "moss_name": "python",
+      "compile_cmd": "python2 -m py_compile {:mainfile}",
+      "execution_cmd": "python2 {:mainfile}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 5,
+    "fields": {
+      "name": "GNU C++",
+      "moss_name": "c",
+      "compile_cmd": "g++ -lm -o {:basename}.exe {:mainfile}",
+      "execution_cmd": "./{:basename}.exe",
+      "executable_name": "{:basename}.exe",
+      "is_interpreted": 0
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 6,
+    "fields": {
+      "name": "GNU C",
+      "moss_name": "c",
+      "compile_cmd": "gcc -lm -o {:basename}.exe {:mainfile}",
+      "execution_cmd": "./{:basename}.exe",
+      "executable_name": "{:basename}.exe",
+      "is_interpreted": 0
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 7,
+    "fields": {
+      "name": "Java",
+      "moss_name": "java",
+      "compile_cmd": "javac {:mainfile}",
+      "execution_cmd": "java {:basename}",
+      "executable_name": "{:basename}.class",
+      "is_interpreted": 0
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 8,
+    "fields": {
+      "name": "Microsoft C++",
+      "moss_name": "c",
+      "compile_cmd": "cl.exe {:mainfile}",
+      "execution_cmd": "./{:basename}.exe",
+      "executable_name": "{:basename}.exe",
+      "is_interpreted": 0
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 9,
+    "fields": {
+      "name": "Ruby",
+      "moss_name": "",
+      "compile_cmd": "ruby -c {:mainfile}",
+      "execution_cmd": "ruby {:mainfile}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  },
+  {
+    "model": "AutoGrade.language",
+    "pk": 10,
+    "fields": {
+      "name": "Perl",
+      "moss_name": "perl",
+      "compile_cmd": "perl -c {:mainfile}",
+      "execution_cmd": "perl {:mainfile}",
+      "executable_name": "",
+      "is_interpreted": 1
+    }
+  }
+]
