@@ -37,4 +37,5 @@ urlpatterns = [
     url(r'^loginas/(?P<student_id>[0-9a-zA-Z_]+)$$', views.loginas, name='loginas'),
     url(r'^request_extension/$', views.request_extension),
     url(r'^course_students_stat/(?P<course_id>[0-9a-zA-Z_]+)$', reportviews.course_students_stat, name = 'course_students_stat'),
+    url(r'^course_report/(?P<course_id>[0-9a-zA-Z_]+)$', reportviews.course_report, name = 'course_report'),
 ]
