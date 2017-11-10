@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from .models import Student, Course, Assignment, Submission, AssignmentExtension
+from .models import Student, Course, Assignment, Submission, AssignmentExtension, OtherFile
 from .forms import SignUpForm, EnrollForm, ChangeEmailForm
 from django.contrib import messages
 from .grader import run_student_tests
@@ -332,6 +332,13 @@ def api(request, action):
 
                     # Move Student Test File
                     shutil.copy(assignment.student_test.url, extract_directory)
+
+                    # Copy OtherFiles
+                    other_files = OtherFile.objects.filter(assignment=assignment)
+                    for other_file in other_files:
+                        other_file_url = other_file.file.url
+                        logging.debug("Copying other file: " + str(other_file_url))
+                        shutil.copy(other_file_url, extract_directory)
 
                     score, timeout = run_student_tests(extract_directory, assignment.total_points, assignment.timeout)
 
