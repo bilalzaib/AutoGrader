@@ -261,7 +261,8 @@ def course(request, course_id, assignment_id=0):
             time_left = "Submission date has passed!"
             expired = True
 
-            late_delta = dateutil.relativedelta.relativedelta(now_time, due_date)
+            # late_delta = dateutil.relativedelta.relativedelta(now_time, due_date) # relativedelta doesn't work. Use date subtraction
+            late_delta = now_time - due_date 
             late_days_needed = late_delta.days + 1 # a second above is a full day
             if late_days_needed <= late_days_left:
                 can_request_extension = True
@@ -520,7 +521,8 @@ def request_extension(request):
     now_time = timezone.now()
     due_date = selected_assignment.corrected_due_date(student)
 
-    late_delta = dateutil.relativedelta.relativedelta(now_time, due_date)
+    # late_delta = dateutil.relativedelta.relativedelta(now_time, due_date)
+    late_delta = now_time - due_date 
     late_days_needed = late_delta.days + 1 # a second above is a full day
     late_days_left = student.get_late_days_left(selected_assignment.course)
 
