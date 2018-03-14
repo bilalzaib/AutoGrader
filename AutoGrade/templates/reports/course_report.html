@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+	<title>Course Report-{{course}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('visualization', '1', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Assignment Due Date');
+        data.addColumn('number', 'Submissions');
+		
+		data.addRows({{ column_chart_data|safe }});
+		
+        // Set chart options
+		var lagend = {position: 'top', textStyle: {color: 'blue', fontSize: 16}}
+        var options = {'title':'Total Submissions of Assignment',
+                       'width':400,
+                       'height':300, 
+					   'bar':{groupWidth: "30%"},
+					   'backgroundColor':'white',
+					   'colors':['silver'],
+					   'hAxis':{title: 'Assignment Due Date',titleTextStyle: {color: 'black'}},
+						'vAxis':{title: 'Number of Submissions', titleTextStyle: {color: 'black'}}
+						};
+						
+		// Create the data table.
+        var data1 = new google.visualization.DataTable();
+        data1.addColumn('string', 'Due Date');
+		data1.addColumn('number', 'Min');
+		data1.addColumn('number', 'Average');
+		data1.addColumn('number', 'Max');
+		
+		data1.addRows({{ stack_column_chart_data|safe }});
+	  
+	  var options1 = {'title':'Min, Max and Average Marks of Each Assignment',
+                       'width':400,
+                       'height':300, 
+					   'bar':{groupWidth: "30%"},
+					   'backgroundColor':'white',
+					   'hAxis':{title: 'Assignment Due Date',titleTextStyle: {color: 'black'}},
+					   'vAxis':{title: 'Marks', titleTextStyle: {color: 'black'}},
+					   'isStacked': true,
+					   'series': [{color:'transparent'},{color:'silver'},{color:'silver'}],
+					   'focusTarget': 'category',
+						};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+		
+		var chart1 = new google.visualization.ColumnChart(document.getElementById('chart_div1'));
+		
+        chart1.draw(data1, options1);
+      }
+    </script>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+    <div class="container">
+		<div class="row">
+			<h2>Course :{{ course.name }} </h2>
+			<hr />
+		</div>
+    	<br />
+	    <div class="row text-center">
+	    	<div class="col col-sm-6">
+		    	<div id="chart_div" style="display: inline-block; margin: 0 auto;"></div>
+	    	</div>
+			
+			<div class="col col-sm-6">
+		    	<div id="chart_div1" style="display: inline-block; margin: 0 auto;"></div>
+			</div>
+		</div>
+  	</div>
+  </body>
+</html>

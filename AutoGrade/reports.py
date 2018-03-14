@@ -38,3 +38,39 @@ def get_course_student_stat(course):
         course_student_data.append([student, completed_assignments, late_days_remaining, average_marks, average_submissions, average_time_taken])
 
     return course_student_data
+
+class CourseReport:
+
+    def get_data_for_column_chart(self, course):
+        assignments = Assignment.objects.filter(course=course)
+        rows = []
+        for assignment in assignments:
+            submission_count = Submission.objects.filter(assignment=assignment).count()
+            date = assignment.due_date.strftime('%Y-%m-%d')
+            rows.append([date, submission_count])
+        return rows
+
+    def get_data_for_stack_column_chart(self,course):
+        assignments = Assignment.objects.filter(course=course)
+
+        rows = []
+
+        for assignment in assignments:
+            latest_submissions = assignment.get_student_and_latest_submissions()
+            list_of_student_score = []
+            for submission, student, student_submission_count in latest_submissions:
+                if submission is not None:
+                    list_of_student_score.append(submission.get_score())
+
+            as_str = "Assignment-" + str(assignment.id)
+            date = assignment.due_date.strftime('%Y-%m-%d')
+            minim = 0
+            maxim = 0
+            mean = 0
+            if len(list_of_student_score) != 0:
+                minim = min(list_of_student_score)
+                maxim = max(list_of_student_score)
+                mean = statistics.mean(list_of_student_score)
+            rows.append([date, {'v':minim, 'f':str(minim)}, {'v':mean-minim, 'f':str(format(mean, '.2f'))}, {'v':maxim-mean, 'f':str(maxim)}])
+
+        return rows
